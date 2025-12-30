@@ -76,12 +76,12 @@ public interface UserMapper extends BaseMapper<User> {
     /**
      * 检查用户名是否已存在
      */
-    @Select("SELECT COUNT(*) FROM users WHERE username = #{username} AND deleted = 0 limit 1")
+    @Select("SELECT EXISTS( SELECT 1 FROM users WHERE username = #{username} AND deleted = 0 )")
     int checkUsernameExists(@Param("username") String username);
     
     /**
      * 检查邮箱是否已存在
      */
-    @Select("SELECT COUNT(*) FROM users WHERE email = #{email} AND deleted = 0")
+    @Select("SELECT EXISTS( SELECT 1 FROM users WHERE email = #{email} AND deleted = 0 )")
     int checkEmailExists(@Param("email") String email);
 } 

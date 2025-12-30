@@ -71,7 +71,7 @@ mybatis-plus:
 
 # JWT配置
 jwt:
-  secret-key: cinemaBookingSystemSecretKey12345678901234567890
+  secret-key: villageReviveSystemSecretKey12345678901234567890
   expiration: 86400000  # 24小时有效期(毫秒)
 
 # 自定义配置

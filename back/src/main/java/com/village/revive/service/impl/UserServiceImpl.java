@@ -100,6 +100,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
         try {
+            log.info("用户登录：{}", loginRequest);
             // 认证用户
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(

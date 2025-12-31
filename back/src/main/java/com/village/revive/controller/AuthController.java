@@ -12,6 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/auth")
 @Tag(name = "认证管理", description = "认证相关接口")
@@ -22,7 +24,7 @@ public class AuthController {
      * 登录
      */
      @RequestMapping("/login")
-      public Result<LoginResponse> login(LoginRequest loginRequest) {
+      public Result<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
 
          LoginResponse loginResponse = userService.login(loginRequest);
          return Result.ok(loginResponse);
@@ -50,5 +52,15 @@ public class AuthController {
     @PostMapping("/logout")
     public Result<Boolean> logout() {
         return Result.success(true);
+    }
+    @PostMapping("/send-verify-code")
+    public Result<String> sendRegisterCode(@RequestBody Map<String, String> payload) {
+        String email = payload.get("email");
+        // 1. 检查邮箱是否已注册
+        if (userService.emailExists(email)) {
+            return Result.fail("该邮箱已被注册");
+        }
+        return userService.sendRegisterCode(email);
+
     }
 }

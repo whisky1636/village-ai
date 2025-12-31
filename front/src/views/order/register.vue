@@ -67,7 +67,7 @@
         placeholder="请输入验证码"
         size="large"
         :prefix-icon="Postcard"
-        :disabled="!canGetCode"
+        :disabled="false"
       />
     </el-col>
     <el-col :span="1">

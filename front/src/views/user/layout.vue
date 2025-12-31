@@ -84,7 +84,7 @@
     </main>
     
     <!-- 智能客服 -->
-    <Chatbot />
+
     
     <!-- 底部 -->
     <footer class="footer">
@@ -99,7 +99,6 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useCartStore } from '@/stores/cart'
 import { getConfigByKey } from '@/api/system-config'
-import Chatbot from '@/components/Chatbot.vue'
 import { 
   House, 
   MapLocation, 

@@ -108,7 +108,7 @@ const handleLogin = () => {
             if (userData.role === 'ADMIN') {
               redirectPath = '/admin'
             } else {
-              redirectPath = '/home'
+              redirectPath = '/attractions'
             }
           }
           

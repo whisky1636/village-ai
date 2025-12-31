@@ -6,9 +6,36 @@ const routes = [
     path: '/',
     redirect: '/login'
   },
-  
-  
-  
+  {
+    path: '/home',
+    name: 'UserHome',
+    component: () => import('@/views/user/layout.vue'),
+    redirect: '/home/index',
+    meta: {
+      title: '首页',
+      requiresAuth: false
+    },
+    children: [
+      {
+        path: 'index',
+        name: 'HomePage',
+        component: () => import('@/views/user/home.vue'),
+        meta: {
+          title: '首页',
+          requiresAuth: false
+        }
+      },
+      {
+        path: 'index',
+        name: 'HomePage',
+        component: () => import('@/views/user/home.vue'),
+        meta: {
+          title: '首页',
+          requiresAuth: false
+        }
+      }
+    ]
+  },
   {
     path: '/login',
     name: 'Login',

@@ -46,6 +46,9 @@ spring:
             class: javax.net.ssl.SSLSocketFactory
           starttls:
             enable: true
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 # MyBatis配置
 mybatis:
   mapper-locations: classpath:mapper/*.xml

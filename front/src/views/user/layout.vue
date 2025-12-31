@@ -117,7 +117,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const userStore = useUserStore()
-const cartStore = useCartStore()
+// const cartStore = useCartStore()
 
 // 系统名称
 const systemName = ref('乡村振兴·新桃源智界')
@@ -126,7 +126,7 @@ const systemName = ref('乡村振兴·新桃源智界')
 const userInfo = computed(() => userStore.userInfo)
 
 // 购物车数量
-const cartCount = computed(() => cartStore.cartCount)
+// const cartCount = computed(() => cartStore.cartCount)
 
 // 获取系统配置
 const getSystemConfig = async () => {

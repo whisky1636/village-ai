@@ -248,7 +248,7 @@ const fetchSystemName = async () => {
 
 // 监听系统名称变更事件
 const handleSystemNameChanged = (event) => {
-  systemName.value = event.detail || '电影购票系统管理平台'
+  systemName.value = event.detail || '乡村振兴·新桃源智界管理平台'
 }
 
 // 组件挂载时获取系统名称并添加事件监听

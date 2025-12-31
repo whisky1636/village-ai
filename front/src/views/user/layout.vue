@@ -84,11 +84,36 @@
     </main>
     
     <!-- 智能客服 -->
-
+        <!-- <Chatbot /> -->
+         <!-- TODO -->
     
     <!-- 底部 -->
     <footer class="footer">
-     
+      <div class="footer-container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>关于我们</h3>
+            <p>智慧乡村振兴平台，致力于推动乡村旅游和特色产业发展，助力乡村振兴战略实施。</p>
+          </div>
+          <div class="footer-section">
+            <h3>快速链接</h3>
+            <ul>
+              <li><router-link to="/home">首页</router-link></li>
+              <li><router-link to="/attractions">景点导览</router-link></li>
+              <li><router-link to="/products">特产商城</router-link></li>
+              <li><router-link to="/activities">活动报名</router-link></li>
+              <li><router-link to="/news">动态资讯</router-link></li>
+              <li><router-link to="/forum">建言献策</router-link></li>
+            </ul>
+          </div>
+          <div class="footer-section">
+            <h3>联系我们</h3>
+            <p>地址：某某省某某市某某区某某路123号</p>
+            <p>电话：123-4567-8901</p>
+            <p>邮箱：contact@village0.com</p>
+          </div>
+        </div>
+      </div>
     </footer>
   </div>
 </template>
@@ -99,6 +124,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { useCartStore } from '@/stores/cart'
 import { getConfigByKey } from '@/api/system-config'
+// import Chatbot from '@/components/Chatbot.vue'
 import { 
   House, 
   MapLocation, 
@@ -200,7 +226,8 @@ onMounted(() => {
   getSystemConfig()
   // 如果用户已登录，获取购物车数量
   if (userInfo.value) {
-    cartStore.getCartCount()
+    // cartStore.getCartCount()
+    //TODO: 获取购物车数量功能待实现
   }
 })
 

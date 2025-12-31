@@ -6,6 +6,7 @@ const routes = [
     path: '/',
     redirect: '/login'
   },
+  //首页路由
   {
     path: '/home',
     name: 'UserHome',
@@ -25,12 +26,33 @@ const routes = [
           requiresAuth: false
         }
       },
+    ]
+  },
+    // 景点相关路由
+  {
+    path: '/attractions',
+    name: 'UserAttractions',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '景点导览',
+      requiresAuth: false
+    },
+    children: [
       {
-        path: 'index',
-        name: 'HomePage',
-        component: () => import('@/views/user/home.vue'),
+        path: '',
+        name: 'AttractionsPage',
+        component: () => import('@/views/user/attractions.vue'),
         meta: {
-          title: '首页',
+          title: '景点导览',
+          requiresAuth: false
+        }
+      },
+      {
+        path: ':id',
+        name: 'AttractionDetail',
+        component: () => import('@/views/user/attraction-detail.vue'),
+        meta: {
+          title: '景点详情',
           requiresAuth: false
         }
       }

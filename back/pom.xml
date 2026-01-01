@@ -151,6 +151,19 @@
             <artifactId>aliyun-sdk-oss</artifactId>
             <version>${aliyun.sdk.oss}</version>
         </dependency>
+        <!-- JAXB API for Java 9+ compatibility -->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
+
+        <!-- JAXB Runtime implementation -->
+        <dependency>
+            <groupId>org.glassfish.jaxb</groupId>
+            <artifactId>jaxb-runtime</artifactId>
+            <version>2.3.1</version>
+        </dependency>
     </dependencies>
     
     <build>

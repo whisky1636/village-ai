@@ -76,7 +76,31 @@ const routes = [
       requiresAuth: false
     }
   },
-  
+  {
+    path: '/admin',
+    name: 'admin',
+    component: () => import('@/views/admin/layout.vue'),
+    meta: {
+      title: '后台管理',
+      requiresAuth: true,
+      roles: ['ADMIN']
+    },
+    children: [
+      
+      // 乡村振兴相关管理路由
+      {
+        path: 'attractions',
+        name: 'AttractionManagement',
+        component: () => import('@/views/admin/attractions.vue'),
+        meta: {
+          title: '景点管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
+
+    ]
+  },
   
   // 错误页面路由
   {

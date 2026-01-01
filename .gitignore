@@ -4,3 +4,4 @@
 /.idea/
 village.sql
 /back/src/main/resources/application.yml
+front/jsconfig.json

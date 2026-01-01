@@ -3,7 +3,7 @@ server:
 
 # 通义千问配置
 qwen:
-  api-key: sk-6e5ee0eb41fb451bb543cd3e2f3b1eff
+  api-key: sk-
   api-url: https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
 
 spring:
@@ -99,4 +99,10 @@ verify-code:
     send-interval-seconds: 60 # 防刷：同一邮箱60秒内只能发一次
     prefix: "email:code:"   # Redis缓存Key前缀（如：email:code:xxx@qq.com）
     template: "乡村振兴-你的注册验证码是：%s，有效期5分钟,请妥善保管，切勿泄露给他人。"
-# 文件上传配置
+village:
+  alioss:
+    endpoint: oss-cn-beijing.aliyuncs.com
+    access-key-id:
+    access-key-secret:
+    bucket-name: sky-order1636888
+

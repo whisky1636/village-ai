@@ -15,6 +15,7 @@ import com.village.revive.utils.BeanCopyUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -38,7 +39,6 @@ public class AttractionServiceImpl implements AttractionService {
             }
             return dto;
         });
-
     }
 
     @Override
@@ -81,13 +81,39 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
     @Override
+    @Transactional
     public AttractionDTO updateAttraction(Long id, AttractionDTO attractionDTO) {
-        return null;
+        Attraction existingAttraction = attractionMapper.selectById(id);
+        if (existingAttraction == null || existingAttraction.getDeleted()) {
+            throw new ServiceException("景点不存在");
+        }
+        // 验证分类是否存在
+        if (attractionDTO.getCategoryId() != null) {
+            AttractionCategory category = categoryMapper.selectById(attractionDTO.getCategoryId());
+            if (category == null || category.getStatus() != 1) {
+                throw new ServiceException("景点分类不存在或已禁用");
+            }
+        }
+
+        Attraction attraction = BeanCopyUtils.copyBean(attractionDTO, Attraction.class);
+        attraction.setId(id);
+        attraction.setUpdatedAt(LocalDateTime.now());
+
+        attractionMapper.updateById(attraction);
+        return getAttractionById(id);
     }
 
     @Override
+    @Transactional
     public void deleteAttraction(Long id) {
+        Attraction attraction = attractionMapper.selectById(id);
+        if (attraction == null || attraction.getDeleted()) {
+            throw new ServiceException("景点不存在");
+        }
 
+        attraction.setDeleted(true);
+        attraction.setUpdatedAt(LocalDateTime.now());
+        attractionMapper.updateById(attraction);
     }
 
     @Override
@@ -130,17 +156,47 @@ public class AttractionServiceImpl implements AttractionService {
     }
 
     @Override
+    @Transactional
     public CategoryDTO createAttractionCategory(CategoryDTO categoryDTO) {
-        return null;
+        AttractionCategory category = BeanCopyUtils.copyBean(categoryDTO, AttractionCategory.class);
+        category.setCreatedAt(LocalDateTime.now());
+        category.setUpdatedAt(LocalDateTime.now());
+        category.setStatus(1); // 默认启用
+
+        categoryMapper.insert(category);
+        return BeanCopyUtils.copyBean(category, CategoryDTO.class);
     }
 
     @Override
+    @Transactional
     public CategoryDTO updateAttractionCategory(Long id, CategoryDTO categoryDTO) {
-        return null;
+        AttractionCategory existingCategory = categoryMapper.selectById(id);
+        if (existingCategory == null) {
+            throw new ServiceException("分类不存在");
+        }
+
+        AttractionCategory category = BeanCopyUtils.copyBean(categoryDTO, AttractionCategory.class);
+        category.setId(id);
+        category.setUpdatedAt(LocalDateTime.now());
+
+        categoryMapper.updateById(category);
+        return BeanCopyUtils.copyBean(category, CategoryDTO.class);
     }
 
     @Override
+    @Transactional
     public void deleteAttractionCategory(Long id) {
+        AttractionCategory category = categoryMapper.selectById(id);
+        if (category == null) {
+            throw new ServiceException("分类不存在");
+        }
 
+        // 检查是否有关联的景点
+        List<Attraction> attractions = attractionMapper.selectByCategoryId(id);
+        if (!attractions.isEmpty()) {
+            throw new ServiceException("该分类下还有景点，无法删除");
+        }
+
+        categoryMapper.deleteById(id);
     }
 }

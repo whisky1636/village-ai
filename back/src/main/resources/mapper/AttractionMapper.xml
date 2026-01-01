@@ -3,8 +3,8 @@
 <mapper namespace="com.village.revive.mapper.AttractionMapper">
 
     <!-- 分页查询景点列表 -->
-    <select id="selectAttractionPage" resultType="com.village.revive.entity.Attraction">
-        SELECT * FROM attractions 
+    <select id="selectAttractionPage" resultType="com.village.revive.dto.AttractionDTO">
+        SELECT a.* ,c.name AS categoryName FROM attractions a LEFT JOIN attraction_categories c ON c.id = a.category_id
         WHERE deleted = 0
         <if test="categoryId != null">
             AND category_id = #{categoryId}

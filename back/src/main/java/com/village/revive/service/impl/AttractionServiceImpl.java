@@ -30,15 +30,8 @@ public class AttractionServiceImpl implements AttractionService {
     @Override
     public IPage<AttractionDTO> getAttractionPage(PageRequest pageRequest, Long categoryId, String keyword, Integer status) {
         Page<Attraction> page = new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize());
-        IPage<Attraction> pageResult = attractionMapper.selectAttractionPage(page, categoryId, keyword, status);
-        return pageResult.convert(attraction -> {
-            AttractionDTO dto = BeanCopyUtils.copyProperties(attraction, AttractionDTO.class);
-            if(attraction.getCategoryId() != null){
-                AttractionCategory attractionCategory = categoryMapper.selectById(attraction.getCategoryId());
-                if(attractionCategory != null) dto.setCategoryName(attractionCategory.getName());
-            }
-            return dto;
-        });
+        IPage<AttractionDTO> pageResult = attractionMapper.selectAttractionPage(page, categoryId, keyword, status);
+        return pageResult;
     }
 
     @Override

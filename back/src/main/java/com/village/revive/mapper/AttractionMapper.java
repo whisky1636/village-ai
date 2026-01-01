@@ -3,6 +3,7 @@ package com.village.revive.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.village.revive.dto.AttractionDTO;
 import com.village.revive.entity.Attraction;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -23,10 +24,10 @@ public interface AttractionMapper extends BaseMapper<Attraction> {
      * @param status 状态
      * @return 景点分页列表
      */
-    IPage<Attraction> selectAttractionPage(Page<Attraction> page,
-                                           @Param("categoryId") Long categoryId,
-                                           @Param("keyword") String keyword,
-                                           @Param("status") Integer status);
+    IPage<AttractionDTO> selectAttractionPage(Page<Attraction> page,
+                                              @Param("categoryId") Long categoryId,
+                                              @Param("keyword") String keyword,
+                                              @Param("status") Integer status);
 
     /**
      * 获取推荐景点列表

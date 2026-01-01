@@ -2,5 +2,6 @@
 /back/.idea/
 /files/
 /.idea/
-
+back/src/main/resources/application.yml
 village.sql
+back/src/main/resources/application.yml

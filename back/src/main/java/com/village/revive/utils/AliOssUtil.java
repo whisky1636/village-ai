@@ -4,10 +4,12 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.OSSObject;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 @Data
 @AllArgsConstructor
@@ -64,5 +66,32 @@ public class AliOssUtil {
         log.info("文件上传到:{}", stringBuilder.toString());
 
         return stringBuilder.toString();
+    }
+    /**
+     * 获取 OSS 文件 InputStream（封装下载逻辑）
+     */
+    public InputStream getInputStream(String objectName) {
+        OSS ossClient = new OSSClientBuilder().build(
+                endpoint, accessKeyId, accessKeySecret
+        );
+
+        try {
+            // 判断文件是否存在
+            if (!ossClient.doesObjectExist(bucketName, objectName)) {
+                log.warn("OSS 文件不存在: {}", objectName);
+                return null;
+            }
+
+            OSSObject ossObject = ossClient.getObject(
+                    bucketName,
+                    objectName
+            );
+
+            return ossObject.getObjectContent();
+
+        } catch (Exception e) {
+            log.error("OSS 获取文件流失败", e);
+            return null;
+        }
     }
 }

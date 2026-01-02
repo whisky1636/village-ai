@@ -61,7 +61,7 @@ const routes = [
     ]
   },
 
-  
+
    // 商品相关路由
   {
     path: '/products',
@@ -120,7 +120,30 @@ const routes = [
       roles: ['ADMIN']
     },
     children: [
+            // 系统日志路由
+      {
+        path: 'system-logs',
+        name: 'SystemLogs',
+        component: () => import('@/views/admin/system-logs.vue'),
+        meta: {
+          title: '系统日志',
+          roles: ['ADMIN'],
+          needAuth: true
+        }
+      },
       
+      // 系统参数路由
+      {
+        path: 'system-config',
+        name: 'SystemConfig',
+        component: () => import('@/views/admin/system-config.vue'),
+        meta: {
+          title: '系统参数',
+          roles: ['ADMIN'],
+          needAuth: true
+        }
+      },
+
       // 乡村振兴相关管理路由
       {
         path: 'attractions',
@@ -128,6 +151,16 @@ const routes = [
         component: () => import('@/views/admin/attractions.vue'),
         meta: {
           title: '景点管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      }, 
+      {
+        path: 'products',
+        name: 'ProductManagement',
+        component: () => import('@/views/admin/products.vue'),
+        meta: {
+          title: '商品管理',
           roles: ['ADMIN'],
           requiresAuth: true
         }

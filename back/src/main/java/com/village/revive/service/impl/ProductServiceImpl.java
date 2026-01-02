@@ -134,7 +134,7 @@ public class ProductServiceImpl implements ProductService {
 
         product.setDeleted(true);
         product.setUpdatedAt(LocalDateTime.now());
-        productMapper.updateById(product);
+        productMapper.deleteById(product);
     }
 
     @Override

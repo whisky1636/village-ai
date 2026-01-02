@@ -106,7 +106,8 @@ public class AttractionServiceImpl implements AttractionService {
 
         attraction.setDeleted(true);
         attraction.setUpdatedAt(LocalDateTime.now());
-        attractionMapper.updateById(attraction);
+        log.info("删除景点成功：{}", attraction);
+        attractionMapper.deleteById(attraction);
     }
 
     @Override

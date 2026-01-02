@@ -32,13 +32,13 @@ public class SecurityService {
         }
         
         // 获取当前用户名
-        String currentUsername = authentication.getName();
+        Long currentId = ((LoginUser)authentication.getPrincipal()).getId();
         
         // 直接尝试将userId转为字符串比较
         // 注意：这个方法在使用数字用户ID时可能不安全，
         // 但我们的系统中使用的是用户名作为authentication.getName()的返回值
         try {
-            return userId.toString().equals(currentUsername);
+            return userId.equals(currentId);
         } catch (Exception e) {
             // 转换失败，返回false
             return false;

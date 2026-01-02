@@ -60,6 +60,7 @@
           <span v-else class="no-image-text">暂无图片</span>
         </template>
       </el-table-column>
+
       <el-table-column prop="name" label="商品名称" width="200" />
       <el-table-column prop="categoryName" label="分类" width="120" />
       <el-table-column prop="price" label="价格" width="100">
@@ -224,6 +225,34 @@
             </div>
           </el-upload>
         </el-form-item>
+        <el-form-item label="商品图集" prop="imageList">
+  <el-upload
+    v-model:file-list="imageList"
+    action="/api/file/upload"
+    list-type="picture-card"
+    :headers="uploadHeaders"
+    :on-success="handleImageSuccess"
+    :on-remove="handleImageRemove"
+    :before-upload="beforeImageUpload"
+    multiple
+  >
+    <el-icon><Plus /></el-icon>
+    
+    <template #file="{ file }">
+      <div class="upload-file-content">
+        <img class="el-upload-list__item-thumbnail" :src="file.url" alt="" />
+        <span class="el-upload-list__item-actions">
+          <span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
+            <el-icon><ZoomIn /></el-icon>
+          </span>
+          <span class="el-upload-list__item-delete" @click="handleImageRemove(file)">
+            <el-icon><Delete /></el-icon>
+          </span>
+        </span>
+      </div>
+    </template>
+  </el-upload>
+</el-form-item>
         <el-form-item label="商品描述" prop="description">
           <el-input
             v-model="form.description"
@@ -292,7 +321,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Refresh } from '@element-plus/icons-vue'
+import { Plus, Search, Refresh,ZoomIn, Delete } from '@element-plus/icons-vue'
 import productApi from '@/api/product'
 import Pagination from '@/components/Pagination.vue'
 
@@ -305,7 +334,10 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const imagePreviewVisible = ref(false)
 const previewImageUrl = ref('')
-
+// 1. 定义响应式图片列表（专门给 el-upload 使用）
+const imageList = ref([])
+const previewVisible = ref(false)
+const previewImage = ref('')
 // 查询参数
 const queryParams = reactive({
   pageNum: 1,
@@ -323,6 +355,7 @@ const form = reactive({
   categoryId: null,
   description: '',
   coverImage: '',
+  images: '',
   price: null,
   originalPrice: null,
   stock: 0,
@@ -349,7 +382,44 @@ const rules = {
 const uploadHeaders = {
   Authorization: sessionStorage.getItem('token') || ''
 }
+// 3. 上传成功处理 (批量添加)
+// 3. 上传成功处理
+const handleImageSuccess = (response, uploadFile, uploadFiles) => {
+  if (response.code === 200) {
+    // response.data 假设是后端返回的图片访问 URL (例如: http://oss.../abc.jpg)
+    const url = response.data;
+    
+    // 关键：将后端返回的真实地址赋值给该文件对象的 url 属性
+    // 这样 el-upload 才能正常预览和保留该图片
+    uploadFile.url = url;
+    
+    // 更新 imageList，确保它是最新的 file-list 状态
+    imageList.value = uploadFiles;
+    
+    ElMessage.success('上传成功');
+  } else {
+    // 如果后端报错，从列表中移除该文件
+    const index = imageList.value.indexOf(uploadFile);
+    if (index !== -1) {
+      imageList.value.splice(index, 1);
+    }
+    ElMessage.error(response.message || '上传失败');
+  }
+};
 
+// 4. 删除图片
+const handleImageRemove = (file) => {
+  const index = imageList.value.findIndex(item => item.url === file.url)
+  if (index !== -1) {
+    imageList.value.splice(index, 1)
+  }
+}
+
+// 5. 预览
+const handlePictureCardPreview = (file) => {
+  previewImage.value = file.url
+  previewVisible.value = true
+}
 // 获取商品列表
 const getList = async () => {
   loading.value = true
@@ -412,6 +482,18 @@ const handleAdd = () => {
 const handleEdit = (row) => {
   resetForm()
   Object.assign(form, row)
+    console.log('表单数据:', form) // 添加调试信息
+    let rawImages = []
+  try {
+    if (row.images) {
+      rawImages = typeof row.images === 'string' ? JSON.parse(row.images) : row.images
+    }
+  } catch (e) {
+    rawImages = []
+  }
+  
+  imageList.value = rawImages.map(url => ({ url }))
+  console.log('图片列表:', imageList.value) // 添加调试信息
   dialogVisible.value = true
   dialogTitle.value = '编辑商品'
 }
@@ -442,7 +524,7 @@ const submitForm = async () => {
   
   try {
     await formRef.value.validate()
-    
+    form.images = JSON.stringify(imageList.value.map(item => item.url))
     if (form.id) {
       await productApi.updateProduct(form.id, form)
       ElMessage.success('更新成功')

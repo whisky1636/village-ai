@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.village.revive.annotation.SystemOperation;
 import com.village.revive.dto.*;
 import com.village.revive.security.SecurityService;
+import com.village.revive.service.ProductReviewService;
 import com.village.revive.service.ProductService;
 import com.village.revive.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,7 @@ import java.util.Map;
 public class ProductController {
     
     private final ProductService productService;
-
+    private final ProductReviewService productReviewService;
     private final SecurityService securityService;
     
     @Operation(summary = "分页查询商品列表")
@@ -160,8 +161,49 @@ public class ProductController {
         productService.updateProductCategoryStatus(id, status);
         return Result.ok();
     }
-    
 
+    @Operation(summary = "获取商品评价列表")
+    @GetMapping("/{id}/reviews")
+    public Result<Map<String, Object>> getProductReviews(
+            @PathVariable Long id,
+            @Parameter(description = "评分筛选") @RequestParam(required = false) Integer rating,
+            @Parameter(description = "是否有图片") @RequestParam(required = false) Boolean hasImages,
+            @Parameter(description = "排序方式") @RequestParam(defaultValue = "time") String sortBy,
+            @Parameter(description = "排序方向") @RequestParam(defaultValue = "desc") String sortOrder,
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Long current,
+            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") Long size) {
+
+        // 构建查询条件
+        ReviewQueryDTO queryDTO = new ReviewQueryDTO();
+        queryDTO.setProductId(id);
+        queryDTO.setRating(rating);
+        queryDTO.setStatus(1); // 只查询已通过审核的评价
+        queryDTO.setHasImages(hasImages);
+        queryDTO.setSortBy(sortBy);
+        queryDTO.setSortOrder(sortOrder);
+        queryDTO.setCurrent(current);
+        queryDTO.setSize(size);
+
+        Long currentUserId = securityService.getCurrentUserId();
+
+        // 获取评价列表
+        IPage<ProductReviewDTO> reviewPage = productReviewService.getReviewPage(queryDTO, currentUserId);
+
+        // 获取评价统计信息
+        Map<String, Object> stats = productReviewService.getReviewStats(id);
+
+        // 获取评价分布
+        List<Map<String, Object>> distribution = productReviewService.getRatingDistribution(id);
+
+        // 组装返回结果
+        Map<String, Object> result = Map.of(
+                "reviews", reviewPage,
+                "stats", stats,
+                "distribution", distribution
+        );
+
+        return Result.ok(result);
+    }
     
     @Operation(summary = "检查用户是否可以评价商品")
     @GetMapping("/{id}/review-eligibility")
@@ -173,7 +215,7 @@ public class ProductController {
             return Result.ok(Map.of("canReview", false, "reason", "请先登录"));
         }
         
-        // 允许用户对同一商品进行多次评价
+        //TOD 允许用户对同一商品进行多次评价
         Map<String, Object> result = new HashMap<>();
         result.put("canReview", true);
         result.put("hasReviewed", false);

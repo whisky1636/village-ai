@@ -57,19 +57,63 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    @Transactional
     public ProductDTO createProduct(ProductDTO productDTO) {
+        // 验证分类是否存在
+        if (productDTO.getCategoryId() != null) {
+            ProductCategory category = categoryMapper.selectById(productDTO.getCategoryId());
+            if (category == null || category.getStatus() != 1) {
+                throw new ServiceException("商品分类不存在或已禁用");
+            }
+        }
 
-        return null;
+        Product product = BeanCopyUtils.copyBean(productDTO, Product.class);
+        product.setCreatedAt(LocalDateTime.now());
+        product.setUpdatedAt(LocalDateTime.now());
+        product.setDeleted(false);
+        product.setSalesCount(0);
+        product.setRating(productDTO.getRating() != null ? productDTO.getRating() : java.math.BigDecimal.ZERO);
+        product.setIsFeatured(productDTO.getIsFeatured() != null ? productDTO.getIsFeatured() : false);
+
+        productMapper.insert(product);
+        return BeanCopyUtils.copyBean(product, ProductDTO.class);
     }
 
     @Override
+    @Transactional
     public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
-        return null;
+        Product existingProduct = productMapper.selectById(id);
+        if (existingProduct == null || existingProduct.getDeleted()) {
+            throw new ServiceException("商品不存在");
+        }
+
+        // 验证分类是否存在
+        if (productDTO.getCategoryId() != null) {
+            ProductCategory category = categoryMapper.selectById(productDTO.getCategoryId());
+            if (category == null || category.getStatus() != 1) {
+                throw new ServiceException("商品分类不存在或已禁用");
+            }
+        }
+
+        Product product = BeanCopyUtils.copyBean(productDTO, Product.class);
+        product.setId(id);
+        product.setUpdatedAt(LocalDateTime.now());
+
+        productMapper.updateById(product);
+        return getProductById(id);
     }
 
     @Override
+    @Transactional
     public void deleteProduct(Long id) {
+        Product product = productMapper.selectById(id);
+        if (product == null || product.getDeleted()) {
+            throw new ServiceException("商品不存在");
+        }
 
+        product.setDeleted(true);
+        product.setUpdatedAt(LocalDateTime.now());
+        productMapper.updateById(product);
     }
 
     @Override

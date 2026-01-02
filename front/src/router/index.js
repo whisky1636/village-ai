@@ -28,6 +28,8 @@ const routes = [
       },
     ]
   },
+
+
     // 景点相关路由
   {
     path: '/attractions',
@@ -53,6 +55,38 @@ const routes = [
         component: () => import('@/views/user/attraction-detail.vue'),
         meta: {
           title: '景点详情',
+          requiresAuth: false
+        }
+      }
+    ]
+  },
+
+  
+   // 商品相关路由
+  {
+    path: '/products',
+    name: 'UserProducts',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '特产商城',
+      requiresAuth: false
+    },
+    children: [
+      {
+        path: '',
+        name: 'ProductsPage',
+        component: () => import('@/views/user/products.vue'),
+        meta: {
+          title: '特产商城',
+          requiresAuth: false
+        }
+      },
+      {
+        path: ':id',
+        name: 'ProductDetail',
+        component: () => import('@/views/user/product-detail.vue'),
+        meta: {
+          title: '商品详情',
           requiresAuth: false
         }
       }

@@ -165,7 +165,16 @@ const routes = [
           requiresAuth: true
         }
       },
-
+    {
+        path: 'product-reviews',
+        name: 'ProductReviewManagement',
+        component: () => import('@/views/admin/product-reviews.vue'),
+        meta: {
+          title: '订单评价管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
     ]
   },
   

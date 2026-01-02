@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class SecurityService {
-    
-    @Autowired
-    private UserMapper userMapper;
+
     
     /**
      * 判断当前用户是否为指定ID的用户
@@ -67,14 +65,12 @@ public class SecurityService {
      * @return 用户ID
      */
     public Long getCurrentUserId() {
-        String username = getCurrentUsername();
-        if (username == null) {
-            return null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+            return loginUser.getId();
         }
-        
-        // 通过用户名查询数据库获取用户ID
-        User user = userMapper.findByUsername(username);
-        return user != null ? user.getId() : null;
+        return null;
     }
     
     /**

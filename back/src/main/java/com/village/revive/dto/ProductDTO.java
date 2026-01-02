@@ -113,7 +113,8 @@ public class ProductDTO {
      * 是否推荐：0否，1是
      */
     private Boolean isFeatured;
-    
+    private Boolean isHot;
+    private Boolean isNew;
     /**
      * 排序值
      */

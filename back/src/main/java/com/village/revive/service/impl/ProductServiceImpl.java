@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,30 @@ public class ProductServiceImpl implements ProductService {
     private final ProductCategoryMapper categoryMapper;
     @Override
     public IPage<ProductDTO> getProductPage(PageRequest pageRequest, Long categoryId, String keyword, Integer status, Boolean isFeatured) {
+
         Page<ProductDTO> page = new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize());
         IPage<ProductDTO> pageResult = productMapper.selectProductPage(page, categoryId, keyword, status, isFeatured);
+
+        // 1. 计算销量前五（基于本次查询结果）
+        List<ProductDTO> records = pageResult.getRecords();
+        List<Long> hotIds = records.stream()
+                .sorted(Comparator.comparing(ProductDTO::getSalesCount, Comparator.nullsLast(Integer::compareTo)).reversed())
+                .limit(5)
+                .map(ProductDTO::getId)
+                .toList();
+
+        // 2. 当前时间
+        LocalDateTime now = LocalDateTime.now();
+
+        // 3. 设置 isHot / isNew
+        records.forEach(p -> {
+            p.setIsHot(hotIds.contains(p.getId()));
+            p.setIsNew(p.getUpdatedAt() != null && p.getUpdatedAt().isAfter(now.minusDays(5)));
+        });
+
         return pageResult;
     }
+
 
     @Override
     public ProductDTO getProductById(Long id) {
@@ -142,6 +163,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public boolean updateStock(Long productId, Integer quantity) {
+        //TOD 性能优化
         int result = productMapper.updateStock(productId, quantity);
         return result > 0;
     }

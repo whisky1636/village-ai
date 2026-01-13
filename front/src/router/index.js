@@ -372,7 +372,29 @@ const routes = [
           requiresAuth: true
         }
       },
-
+      // 活动管理路由
+      {
+        path: 'activities',
+        name: 'ActivityManagement',
+        component: () => import('@/views/admin/activities.vue'),
+        meta: {
+          title: '活动管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
+      
+      // 活动报名管理路由
+      {
+        path: 'activity-registrations',
+        name: 'ActivityRegistrations',
+        component: () => import('@/views/admin/activity-registrations.vue'),
+        meta: {
+          title: '报名管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      }
     ]
   },
   

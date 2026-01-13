@@ -96,7 +96,7 @@ public class Result<T> implements Serializable {
     /**
      * 错误返回结果 - error方法的别名
      */
-    public static <T> Result<T> error(Integer code, String message) {
+    public static <T> Result<T> error( String message) {
         return fail(message);
     }
 

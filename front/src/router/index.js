@@ -165,6 +165,16 @@ const routes = [
           requiresAuth: true
         }
       },
+            {
+        path: 'product-categories',
+        name: 'ProductCategoryManagement',
+        component: () => import('@/views/admin/product-categories.vue'),
+        meta: {
+          title: '商品分类管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
     {
         path: 'product-reviews',
         name: 'ProductReviewManagement',
@@ -175,6 +185,7 @@ const routes = [
           requiresAuth: true
         }
       },
+
     ]
   },
   

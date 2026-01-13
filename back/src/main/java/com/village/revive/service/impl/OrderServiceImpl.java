@@ -416,10 +416,7 @@ public class OrderServiceImpl implements OrderService {
             throw new ServiceException("商品不存在或已下架");
         }
         
-        // 检查库存
-        if (product.getStock() < quantity) {
-            throw new ServiceException("商品 " + product.getName() + " 库存不足");
-        }
+
         
         // 创建订单项DTO
         OrderItemDTO itemDTO = new OrderItemDTO();

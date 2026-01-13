@@ -4,7 +4,7 @@
 
     <!-- 分页查询订单列表 -->
     <select id="selectOrderPage" resultType="com.village.revive.entity.Order">
-        SELECT * FROM orders 
+        SELECT * FROM orders
         WHERE deleted = 0
         <if test="userId != null">
             AND user_id = #{userId}
@@ -23,28 +23,28 @@
 
     <!-- 根据用户ID查询订单列表 -->
     <select id="selectByUserId" resultType="com.village.revive.entity.Order">
-        SELECT * FROM orders 
+        SELECT * FROM orders
         WHERE deleted = 0 AND user_id = #{userId}
         ORDER BY created_at DESC
     </select>
 
     <!-- 根据订单号查询订单 -->
     <select id="selectByOrderNo" resultType="com.village.revive.entity.Order">
-        SELECT * FROM orders 
+        SELECT * FROM orders
         WHERE deleted = 0 AND order_no = #{orderNo}
     </select>
 
     <!-- 更新订单状态 -->
     <update id="updateOrderStatus">
-        UPDATE orders 
+        UPDATE orders
         SET order_status = #{orderStatus}, updated_at = NOW()
         WHERE id = #{orderId}
     </update>
 
     <!-- 更新支付状态 -->
     <update id="updatePaymentStatus">
-        UPDATE orders 
-        SET payment_status = #{paymentStatus}, 
+        UPDATE orders
+        SET payment_status = #{paymentStatus},
             payment_time = CASE WHEN #{paymentStatus} = 1 THEN NOW() ELSE payment_time END,
             updated_at = NOW()
         WHERE id = #{orderId}
@@ -52,11 +52,11 @@
 
     <!-- 查询待支付超时订单 -->
     <select id="selectTimeoutOrders" resultType="com.village.revive.entity.Order">
-        SELECT * FROM orders 
-        WHERE deleted = 0 
-        AND order_status = 1 
-        AND payment_status = 0
-        AND created_at &lt; DATE_SUB(NOW(), INTERVAL #{timeoutMinutes} MINUTE)
+        SELECT * FROM orders
+        WHERE deleted = 0
+          AND order_status = 1
+          AND payment_status = 0
+          AND created_at &lt; DATE_SUB(NOW(), INTERVAL #{timeoutMinutes} MINUTE)
     </select>
 
 </mapper>

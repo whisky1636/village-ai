@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.village.revive.annotation.SystemOperation;
 import com.village.revive.entity.ActivityRegistration;
 import com.village.revive.entity.User;
+import com.village.revive.security.SecurityService;
 import com.village.revive.service.ActivityRegistrationService;
 import com.village.revive.service.UserService;
+import com.village.revive.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -36,24 +38,17 @@ public class ActivityRegistrationController {
     private ActivityRegistrationService registrationService;
     
     @Autowired
-    private UserService userService;
+    private SecurityService securityService;
     
     /**
      * 从Authentication获取用户ID
      */
-    private Long getUserIdFromAuth(Authentication authentication) {
-        String username = authentication.getName();
-        User user = userService.getByUsername(username);
-        if (user == null) {
-            throw new RuntimeException("用户不存在");
-        }
-        return user.getId();
-    }
+
     
     @Operation(summary = "分页查询报名列表")
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/page")
-    public ResponseEntity<Map<String, Object>> getRegistrationPage(
+    public Result<Map<String, Object>> getRegistrationPage(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) Long activityId,
@@ -70,23 +65,19 @@ public class ActivityRegistrationController {
         data.put("current", result.getCurrent());
         data.put("size", result.getSize());
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", data);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok(data);
     }
     
     @Operation(summary = "获取用户的报名列表")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/my-registrations")
-    public ResponseEntity<Map<String, Object>> getMyRegistrations(
+    public Result<Map<String, Object>> getMyRegistrations(
             @RequestParam(defaultValue = "1") Integer current,
-            @RequestParam(defaultValue = "10") Integer size,
-            Authentication authentication) {
+            @RequestParam(defaultValue = "10") Integer size) {
         
-        Long userId = getUserIdFromAuth(authentication);
+        Long userId = securityService.getCurrentUserId();
         Page<ActivityRegistration> page = new Page<>(current, size);
         Page<ActivityRegistration> result = registrationService.getRegistrationPage(page, null, userId, null, null);
         
@@ -96,23 +87,20 @@ public class ActivityRegistrationController {
         data.put("current", result.getCurrent());
         data.put("size", result.getSize());
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", data);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok(data);
     }
     
     @Operation(summary = "检查是否已报名")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/check/{activityId}")
-    public ResponseEntity<Map<String, Object>> checkRegistration(
-            @PathVariable Long activityId,
-            Authentication authentication) {
+    public Result<Map<String, Object>> checkRegistration(
+            @PathVariable Long activityId
+            ) {
         
         try {
-            Long userId = getUserIdFromAuth(authentication);
+            Long userId = securityService.getCurrentUserId();
             boolean hasRegistered = registrationService.hasRegistered(activityId, userId);
             ActivityRegistration registration = null;
             if (hasRegistered) {
@@ -122,20 +110,13 @@ public class ActivityRegistrationController {
             Map<String, Object> data = new HashMap<>();
             data.put("hasRegistered", hasRegistered);
             data.put("registration", registration);
+
             
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 200);
-            response.put("message", "success");
-            response.put("data", data);
-            
-            return ResponseEntity.ok(response);
+            return Result.ok(data);
         } catch (Exception e) {
             log.error("检查报名状态失败", e);
-            Map<String, Object> response = new HashMap<>();
-            response.put("code", 500);
-            response.put("message", "系统内部错误，请联系管理员");
-            response.put("data", null);
-            return ResponseEntity.status(500).body(response);
+
+            return Result.fail("系统错误，请联系管理员");
         }
     }
     
@@ -143,46 +124,39 @@ public class ActivityRegistrationController {
     @SystemOperation(module = "活动报名", operation = "创建报名")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createRegistration(
-            @RequestBody ActivityRegistration registration,
-            Authentication authentication) {
+    public Result<ActivityRegistration> createRegistration(
+            @RequestBody ActivityRegistration registration
+           ) {
         
-        Long userId = getUserIdFromAuth(authentication);
+        Long userId = securityService.getCurrentUserId();
         registration.setUserId(userId);
         ActivityRegistration created = registrationService.createRegistration(registration);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "报名成功");
-        response.put("data", created);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok(created);
     }
     
     @Operation(summary = "取消报名")
     @SystemOperation(module = "活动报名", operation = "取消报名")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Map<String, Object>> cancelRegistration(
-            @PathVariable Long id,
-            Authentication authentication) {
+    public Result cancelRegistration(
+            @PathVariable Long id) {
         
-        Long userId = getUserIdFromAuth(authentication);
+        Long userId = securityService.getCurrentUserId();
         registrationService.cancelRegistration(id, userId);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "取消报名成功");
-        response.put("data", null);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok();
     }
     
     @Operation(summary = "审核报名")
     @SystemOperation(module = "活动报名", operation = "审核报名")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/audit")
-    public ResponseEntity<Map<String, Object>> auditRegistration(
+    public Result<Map<String, Object>> auditRegistration(
             @PathVariable Long id,
             @RequestBody Map<String, Object> params) {
         
@@ -190,50 +164,41 @@ public class ActivityRegistrationController {
         String adminRemarks = (String) params.get("adminRemarks");
         registrationService.auditRegistration(id, status, adminRemarks);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "审核成功");
-        response.put("data", null);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok();
     }
     
     @Operation(summary = "支付报名费")
     @SystemOperation(module = "活动报名", operation = "支付报名费")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @PostMapping("/{id}/pay")
-    public ResponseEntity<Map<String, Object>> payRegistrationFee(
+    public Result payRegistrationFee(
             @PathVariable Long id,
             @RequestBody Map<String, String> params) {
         
         String paymentMethod = params.get("paymentMethod");
         registrationService.payRegistrationFee(id, paymentMethod);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "支付成功");
-        response.put("data", null);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok("支付成功");
     }
     
     @Operation(summary = "签到")
     @SystemOperation(module = "活动报名", operation = "签到")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/check-in")
-    public ResponseEntity<Map<String, Object>> checkIn(
+    public Result checkIn(
             @PathVariable Long id,
             @RequestBody Map<String, String> params) {
         
         String registrationNo = params.get("registrationNo");
         registrationService.checkIn(id, registrationNo);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "签到成功");
-        response.put("data", null);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok("签到成功");
     }
 }
 

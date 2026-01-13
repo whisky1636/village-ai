@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.village.revive.mapper.ActivityMapper">
+    
+    <!-- 增加浏览次数 -->
+    <update id="incrementViewCount">
+        UPDATE activities
+        SET view_count = view_count + 1
+        WHERE id = #{id} AND deleted = 0
+    </update>
+    
+    <!-- 更新报名人数 -->
+    <update id="updateCurrentParticipants">
+        UPDATE activities
+        SET current_participants = current_participants + #{count}
+        WHERE id = #{id} AND deleted = 0
+    </update>
+    
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

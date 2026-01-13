@@ -61,7 +61,36 @@ const routes = [
     ]
   },
 
-
+// 活动相关路由
+  {
+    path: '/activities',
+    name: 'UserActivities',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '活动报名',
+      requiresAuth: false
+    },
+    children: [
+      {
+        path: '',
+        name: 'ActivitiesPage',
+        component: () => import('@/views/user/activities.vue'),
+        meta: {
+          title: '活动列表',
+          requiresAuth: false
+        }
+      },
+      {
+        path: ':id',
+        name: 'ActivityDetail',
+        component: () => import('@/views/user/activity-detail.vue'),
+        meta: {
+          title: '活动详情',
+          requiresAuth: false
+        }
+      }
+    ]
+  },
    // 商品相关路由
   {
     path: '/products',

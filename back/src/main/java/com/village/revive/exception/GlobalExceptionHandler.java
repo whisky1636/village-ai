@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ServiceException.class)
     public Result handleServiceException(ServiceException e) {
         log.error("ServiceException: {}", e.getMessage());
-        return Result.error(e.getCode(), e.getMessage());
+        return Result.error(e.getMessage());
     }
     /**
      * 处理认证异常

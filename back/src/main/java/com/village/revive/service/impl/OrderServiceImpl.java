@@ -218,12 +218,10 @@ public class OrderServiceImpl implements OrderService {
         if (order == null || order.getDeleted()) {
             throw new ServiceException("订单不存在");
         }
-        
-        orderMapper.updateOrderStatus(orderId, orderStatus);
-        
         // 更新相关时间字段
         Order updateOrder = new Order();
         updateOrder.setId(orderId);
+        updateOrder.setOrderStatus(orderStatus);
         updateOrder.setUpdatedAt(LocalDateTime.now());
         
         switch (orderStatus) {

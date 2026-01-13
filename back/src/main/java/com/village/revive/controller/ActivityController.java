@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.village.revive.annotation.SystemOperation;
 import com.village.revive.entity.Activity;
 import com.village.revive.service.ActivityService;
+import com.village.revive.utils.Result;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +36,7 @@ public class ActivityController {
     
     @Operation(summary = "分页查询活动列表")
     @GetMapping("/page")
-    public ResponseEntity<Map<String, Object>> getActivityPage(
+    public Result<Map<String, Object>> getActivityPage(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String title,
@@ -52,107 +53,80 @@ public class ActivityController {
         data.put("current", result.getCurrent());
         data.put("size", result.getSize());
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", data);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok(data);
     }
     
     @Operation(summary = "获取活动详情")
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getActivityDetail(@PathVariable Long id) {
+    public Result<Activity> getActivityDetail(@PathVariable Long id) {
         Activity activity = activityService.getActivityDetail(id);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", activity);
-        
-        return ResponseEntity.ok(response);
+        return Result.ok(activity);
     }
     
     @Operation(summary = "创建活动")
     @SystemOperation(module = "活动管理", operation = "创建活动")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createActivity(@RequestBody Activity activity) {
+    public Result<Activity> createActivity(@RequestBody Activity activity) {
         Activity created = activityService.createActivity(activity);
+
+
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "创建成功");
-        response.put("data", created);
-        
-        return ResponseEntity.ok(response);
+        return Result.ok(created);
     }
     
     @Operation(summary = "更新活动")
     @SystemOperation(module = "活动管理", operation = "更新活动")
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> updateActivity(@PathVariable Long id, @RequestBody Activity activity) {
+    public Result updateActivity(@PathVariable Long id, @RequestBody Activity activity) {
         activity.setId(id);
         activityService.updateActivity(activity);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "更新成功");
-        response.put("data", null);
-        
-        return ResponseEntity.ok(response);
+        return Result.ok();
     }
     
     @Operation(summary = "删除活动")
     @SystemOperation(module = "活动管理", operation = "删除活动")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> deleteActivity(@PathVariable Long id) {
+    public Result deleteActivity(@PathVariable Long id) {
         activityService.deleteActivity(id);
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "删除成功");
-        response.put("data", null);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok();
     }
     
     @Operation(summary = "发布活动")
     @SystemOperation(module = "活动管理", operation = "发布活动")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/publish")
-    public ResponseEntity<Map<String, Object>> publishActivity(@PathVariable Long id) {
+    public Result publishActivity(@PathVariable Long id) {
         activityService.publishActivity(id);
+
+
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "发布成功");
-        response.put("data", null);
-        
-        return ResponseEntity.ok(response);
+        return Result.ok();
     }
     
     @Operation(summary = "取消活动")
     @SystemOperation(module = "活动管理", operation = "取消活动")
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Map<String, Object>> cancelActivity(@PathVariable Long id) {
+    public Result cancelActivity(@PathVariable Long id) {
         activityService.cancelActivity(id);
+
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "取消成功");
-        response.put("data", null);
-        
-        return ResponseEntity.ok(response);
+        return Result.ok();
     }
     
     @Operation(summary = "获取我的活动报名记录")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @GetMapping("/my-registrations")
-    public ResponseEntity<Map<String, Object>> getMyActivityRegistrations(
+    public Result<Map<String, Object>> getMyActivityRegistrations(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam(required = false) String title,
@@ -168,12 +142,9 @@ public class ActivityController {
         data.put("current", result.getCurrent());
         data.put("size", result.getSize());
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", 200);
-        response.put("message", "success");
-        response.put("data", data);
+
         
-        return ResponseEntity.ok(response);
+        return Result.ok(data);
     }
 }
 

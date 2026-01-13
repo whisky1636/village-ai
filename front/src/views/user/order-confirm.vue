@@ -180,6 +180,11 @@
               <el-radio :model-value="selectedAddress?.id === address.id" />
             </div>
           </div>
+
+          <div class="add-address-item" @click="handleAddAddress">
+            <el-icon><Plus /></el-icon>
+            <span>使用新地址</span>
+          </div>
         </div>
         <template #footer>
           <div class="dialog-footer">
@@ -188,15 +193,87 @@
           </div>
         </template>
       </el-dialog>
+
+      <!-- 添加地址弹窗 -->
+      <el-dialog 
+        v-model="showAddAddressDialog" 
+        title="添加新地址" 
+        width="500px"
+        append-to-body
+        @close="resetAddressForm"
+      >
+        <el-form 
+          ref="formRef" 
+          :model="form" 
+          :rules="rules" 
+          label-width="80px"
+        >
+          <el-form-item label="收货人" prop="receiverName">
+            <el-input v-model="form.receiverName" placeholder="请输入收货人姓名" />
+          </el-form-item>
+          
+          <el-form-item label="手机号码" prop="receiverPhone">
+            <el-input v-model="form.receiverPhone" placeholder="请输入手机号码" />
+          </el-form-item>
+          
+          <el-form-item label="地区" prop="district">
+            <div style="display: flex; gap: 10px; width: 100%;">
+              <el-select v-model="form.province" placeholder="省" @change="onProvinceChange" style="flex: 1;">
+                <el-option 
+                  v-for="province in provinces" 
+                  :key="province.value" 
+                  :label="province.label" 
+                  :value="province.value"
+                />
+              </el-select>
+              <el-select v-model="form.city" placeholder="市" @change="onCityChange" style="flex: 1;">
+                <el-option 
+                  v-for="city in cities" 
+                  :key="city.value" 
+                  :label="city.label" 
+                  :value="city.value"
+                />
+              </el-select>
+              <el-select v-model="form.district" placeholder="区" style="flex: 1;">
+                <el-option 
+                  v-for="district in districts" 
+                  :key="district.value" 
+                  :label="district.label" 
+                  :value="district.value"
+                />
+              </el-select>
+            </div>
+          </el-form-item>
+          
+          <el-form-item label="详细地址" prop="detailAddress">
+            <el-input 
+              v-model="form.detailAddress" 
+              type="textarea" 
+              :rows="2"
+              placeholder="请输入详细地址"
+            />
+          </el-form-item>
+          
+          <el-form-item>
+            <el-checkbox v-model="form.isDefault">设为默认地址</el-checkbox>
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="showAddAddressDialog = false">取消</el-button>
+            <el-button type="primary" @click="submitAddressForm" :loading="submitLoading">确定</el-button>
+          </div>
+        </template>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CreditCard, Wallet, Money } from '@element-plus/icons-vue'
+import { CreditCard, Wallet, Money, Plus } from '@element-plus/icons-vue'
 import orderApi from '@/api/order'
 import addressApi from '@/api/address'
 
@@ -212,6 +289,97 @@ const selectedDelivery = ref('standard')
 const selectedPayment = ref('alipay')
 const orderRemark = ref('')
 const showAddressDialog = ref(false)
+
+// 添加地址相关
+const showAddAddressDialog = ref(false)
+const submitLoading = ref(false)
+const formRef = ref(null)
+const form = reactive({
+  id: null,
+  receiverName: '',
+  receiverPhone: '',
+  province: '',
+  city: '',
+  district: '',
+  detailAddress: '',
+  isDefault: false
+})
+
+// 地区数据
+const provinces = ref([
+  { value: '湖南省', label: '湖南省' },
+  { value: '湖北省', label: '湖北省' },
+  { value: '广东省', label: '广东省' },
+  { value: '江苏省', label: '江苏省' },
+  { value: '浙江省', label: '浙江省' }
+])
+const cities = ref([])
+const districts = ref([])
+
+const cityMap = {
+  '湖南省': [
+    { value: '长沙市', label: '长沙市' },
+    { value: '常德市', label: '常德市' },
+    { value: '张家界市', label: '张家界市' },
+    { value: '株洲市', label: '株洲市' },
+    { value: '湘潭市', label: '湘潭市' }
+  ],
+  '湖北省': [
+    { value: '武汉市', label: '武汉市' },
+    { value: '宜昌市', label: '宜昌市' },
+    { value: '襄阳市', label: '襄阳市' }
+  ],
+  '广东省': [
+    { value: '广州市', label: '广州市' },
+    { value: '深圳市', label: '深圳市' },
+    { value: '珠海市', label: '珠海市' }
+  ]
+}
+
+const districtMap = {
+  '长沙市': [
+    { value: '岳麓区', label: '岳麓区' },
+    { value: '芙蓉区', label: '芙蓉区' },
+    { value: '天心区', label: '天心区' },
+    { value: '开福区', label: '开福区' },
+    { value: '雨花区', label: '雨花区' }
+  ],
+  '常德市': [
+    { value: '武陵区', label: '武陵区' },
+    { value: '鼎城区', label: '鼎城区' },
+    { value: '桃源县', label: '桃源县' },
+    { value: '汉寿县', label: '汉寿县' }
+  ],
+  '武汉市': [
+    { value: '江岸区', label: '江岸区' },
+    { value: '江汉区', label: '江汉区' },
+    { value: '硚口区', label: '硚口区' }
+  ]
+}
+
+const rules = {
+  receiverName: [
+    { required: true, message: '请输入收货人姓名', trigger: 'blur' },
+    { min: 2, max: 10, message: '姓名长度在2到10个字符', trigger: 'blur' }
+  ],
+  receiverPhone: [
+    { required: true, message: '请输入手机号码', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+  ],
+  province: [
+    { required: true, message: '请选择省份', trigger: 'change' }
+  ],
+  city: [
+    { required: true, message: '请选择城市', trigger: 'change' }
+  ],
+  district: [
+    { required: true, message: '请选择区县', trigger: 'change' }
+  ],
+  detailAddress: [
+    { required: true, message: '请输入详细地址', trigger: 'blur' },
+    { min: 5, max: 100, message: '详细地址长度在5到100个字符', trigger: 'blur' }
+  ]
+}
 
 // 费用计算
 const discountAmount = ref(0)
@@ -295,6 +463,79 @@ const selectAddress = (address) => {
 // 关闭地址弹窗
 const handleAddressDialogClose = () => {
   showAddressDialog.value = false
+}
+
+// 地址表单相关逻辑
+const onProvinceChange = (province) => {
+  form.city = ''
+  form.district = ''
+  cities.value = cityMap[province] || []
+  districts.value = []
+}
+
+const onCityChange = (city) => {
+  form.district = ''
+  districts.value = districtMap[city] || []
+}
+
+const handleAddAddress = () => {
+  resetAddressForm()
+  showAddAddressDialog.value = true
+}
+
+const resetAddressForm = () => {
+  if (formRef.value) {
+    formRef.value.resetFields()
+  }
+  Object.assign(form, {
+    id: null,
+    receiverName: '',
+    receiverPhone: '',
+    province: '',
+    city: '',
+    district: '',
+    detailAddress: '',
+    isDefault: false
+  })
+  cities.value = []
+  districts.value = []
+}
+
+const submitAddressForm = async () => {
+  if (!formRef.value) return
+  
+  try {
+    await formRef.value.validate()
+    submitLoading.value = true
+    
+    // 强制复制一份数据，避免解引用问题
+    const addressData = JSON.parse(JSON.stringify(form))
+    const res = await addressApi.createAddress(addressData)
+    
+    if (res.code === 200) {
+      ElMessage.success('地址添加成功')
+      showAddAddressDialog.value = false
+      await getAddresses() // 刷新列表
+      
+      // 自动选中刚添加的地址
+      if (res.data && res.data.id) {
+         // 获取最新列表后尝试寻找该地址，或者直接从res.data设置
+         // 由于列表是异步刷新的，这里直接设置selectedAddress
+         // 但接口可能返回完整对象
+         const newAddr = res.data
+         selectedAddress.value = newAddr
+      }
+    } else {
+      ElMessage.error(res.message || '操作失败')
+    }
+  } catch (error) {
+    console.error('提交失败:', error)
+    if (error !== 'validation') {
+      ElMessage.error('操作失败')
+    }
+  } finally {
+    submitLoading.value = false
+  }
 }
 
 // 提交订单
@@ -723,6 +964,25 @@ onMounted(() => {
 .address-item.selected {
   border-color: #3b82f6;
   background: #eff6ff;
+}
+
+.add-address-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.add-address-item:hover {
+  border-color: #3b82f6;
+  color: #3b82f6;
+  background: #f0f7ff;
 }
 
 /* 响应式设计 */

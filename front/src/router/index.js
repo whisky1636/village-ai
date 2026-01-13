@@ -92,6 +92,55 @@ const routes = [
       }
     ]
   },
+    // 用户个人中心路由
+  {
+    path: '/user',
+    name: 'UserCenter',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '个人中心',
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: 'profile',
+        name: 'UserProfile',
+        component: () => import('@/views/user/person.vue'),
+        meta: {
+          title: '个人中心',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'change-password',
+        name: 'UserChangePassword',
+        component: () => import('@/views/user/changepassword.vue'),
+        meta: {
+          title: '修改密码',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'orders',
+        name: 'UserOrders',
+        component: () => import('@/views/user/orders.vue'),
+        meta: {
+          title: '我的订单',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'addresses',
+        name: 'UserAddresses',
+        component: () => import('@/views/user/addresses.vue'),
+        meta: {
+          title: '我的地址',
+          requiresAuth: true
+        }
+      },
+
+    ]
+  },
    // 购物车路由
   {
     path: '/cart',
@@ -184,6 +233,41 @@ const routes = [
       roles: ['ADMIN']
     },
     children: [
+         // 个人中心路由
+      {
+        path: 'profile',
+        name: 'adminProfile',
+        component: () => import('@/views/admin/person.vue'),
+        meta: {
+          title: '个人中心',
+          requiresAuth: true,
+          roles: ['ADMIN']
+        }
+      },
+      
+      // 修改密码路由
+      {
+        path: 'change-password',
+        name: 'changePassword',
+        component: () => import('@/views/admin/changepassword.vue'),
+        meta: {
+          title: '修改密码',
+          requiresAuth: true,
+          roles: ['ADMIN']
+        }
+      },
+      
+      // 用户管理路由
+      {
+        path: 'users',
+        name: 'userManagement',
+        component: () => import('@/views/admin/users.vue'),
+        meta: {
+          title: '用户管理',
+          requiresAuth: true,
+          roles: ['ADMIN']
+        }
+      },
             // 系统日志路由
       {
         path: 'system-logs',

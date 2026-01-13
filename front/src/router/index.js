@@ -92,6 +92,70 @@ const routes = [
       }
     ]
   },
+   // 购物车路由
+  {
+    path: '/cart',
+    name: 'ShoppingCart',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '购物车',
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: '',
+        name: 'CartPage',
+        component: () => import('@/views/user/cart.vue'),
+        meta: {
+          title: '购物车',
+          requiresAuth: true
+        }
+      }
+    ]
+  },
+  
+  // 订单相关路由
+  {
+    path: '/order',
+    name: 'UserOrder',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '订单',
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: 'confirm',
+        name: 'OrderConfirm',
+        component: () => import('@/views/user/order-confirm.vue'),
+        meta: {
+          title: '确认订单',
+          requiresAuth: true
+        }
+      }
+    ]
+  },
+  // 支付路由
+  {
+    path: '/user/pay',
+    name: 'UserPay',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '订单支付',
+      requiresAuth: true
+    },
+    children: [
+      {
+        path: '',
+        name: 'PayPage',
+        component: () => import('@/views/user/pay.vue'),
+        meta: {
+          title: '订单支付',
+          requiresAuth: true
+        }
+      }
+    ]
+  },
   {
     path: '/login',
     name: 'Login',
@@ -165,12 +229,22 @@ const routes = [
           requiresAuth: true
         }
       },
-            {
+      {
         path: 'product-categories',
         name: 'ProductCategoryManagement',
         component: () => import('@/views/admin/product-categories.vue'),
         meta: {
           title: '商品分类管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'orders',
+        name: 'OrderManagement',
+        component: () => import('@/views/admin/orders.vue'),
+        meta: {
+          title: '订单管理',
           roles: ['ADMIN'],
           requiresAuth: true
         }

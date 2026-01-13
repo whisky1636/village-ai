@@ -14,11 +14,13 @@ import com.village.revive.service.AttractionService;
 import com.village.revive.utils.BeanCopyUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +29,12 @@ import java.util.stream.Collectors;
 public class AttractionServiceImpl implements AttractionService {
     private final AttractionMapper attractionMapper;
     private final AttractionCategoryMapper categoryMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    
+    // 缓存键常量
+    private static final String ATTRACTION_CATEGORIES_CACHE_KEY = "attraction:categories:enabled";
+    private static final String ATTRACTION_CATEGORY_CACHE_PREFIX = "attraction:category:id:";
+    
     @Override
     public IPage<AttractionDTO> getAttractionPage(PageRequest pageRequest, Long categoryId, String keyword, Integer status) {
         Page<Attraction> page = new Page<>(pageRequest.getPageNum(), pageRequest.getPageSize());
@@ -143,10 +151,26 @@ public class AttractionServiceImpl implements AttractionService {
 
     @Override
     public List<CategoryDTO> getAttractionCategories() {
+        // 尝试从缓存获取数据
+        String cacheKey = ATTRACTION_CATEGORIES_CACHE_KEY;
+        List<CategoryDTO> cachedCategories = (List<CategoryDTO>) redisTemplate.opsForValue().get(cacheKey);
+        
+        if (cachedCategories != null && !cachedCategories.isEmpty()) {
+            log.debug("从缓存获取景点分类列表");
+            return cachedCategories;
+        }
+        
+        // 如果缓存中没有，则从数据库获取
         List<AttractionCategory> categories = categoryMapper.selectEnabledCategories();
-        return categories.stream()
+        List<CategoryDTO> result = categories.stream()
                 .map(category -> BeanCopyUtils.copyBean(category, CategoryDTO.class))
                 .collect(Collectors.toList());
+        
+        // 将结果存入缓存，设置过期时间为30分钟
+        redisTemplate.opsForValue().set(cacheKey, result, 30, TimeUnit.MINUTES);
+        log.debug("从数据库获取景点分类列表并存入缓存");
+        
+        return result;
     }
 
     @Override
@@ -158,7 +182,12 @@ public class AttractionServiceImpl implements AttractionService {
         category.setStatus(1); // 默认启用
 
         categoryMapper.insert(category);
-        return BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        CategoryDTO result = BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        
+        // 清除分类缓存
+        evictAttractionCategoryCache();
+        
+        return result;
     }
 
     @Override
@@ -174,7 +203,12 @@ public class AttractionServiceImpl implements AttractionService {
         category.setUpdatedAt(LocalDateTime.now());
 
         categoryMapper.updateById(category);
-        return BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        CategoryDTO result = BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        
+        // 清除分类缓存
+        evictAttractionCategoryCache();
+        
+        return result;
     }
 
     @Override
@@ -192,5 +226,16 @@ public class AttractionServiceImpl implements AttractionService {
         }
 
         categoryMapper.deleteById(id);
+        
+        // 清除分类缓存
+        evictAttractionCategoryCache();
+    }
+    
+    /**
+     * 清除景点分类缓存
+     */
+    private void evictAttractionCategoryCache() {
+        redisTemplate.delete(ATTRACTION_CATEGORIES_CACHE_KEY);
+        log.debug("清除景点分类缓存");
     }
 }

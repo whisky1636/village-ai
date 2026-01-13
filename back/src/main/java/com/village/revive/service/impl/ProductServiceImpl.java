@@ -16,6 +16,7 @@ import com.village.revive.utils.BeanCopyUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -25,6 +26,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +35,12 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
     private final ProductMapper productMapper;
     private final ProductCategoryMapper categoryMapper;
+    private final RedisTemplate<String, Object> redisTemplate;
+    
+    // 缓存键常量
+    private static final String PRODUCT_CATEGORIES_CACHE_KEY = "product:categories:enabled";
+    private static final String PRODUCT_CATEGORY_CACHE_PREFIX = "product:category:id:";
+    
     @Override
     public IPage<ProductDTO> getProductPage(PageRequest pageRequest, Long categoryId, String keyword, Integer status, Boolean isFeatured) {
 
@@ -175,10 +183,26 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<CategoryDTO> getProductCategories() {
+        // 尝试从缓存获取数据
+        String cacheKey = PRODUCT_CATEGORIES_CACHE_KEY;
+        List<CategoryDTO> cachedCategories = (List<CategoryDTO>) redisTemplate.opsForValue().get(cacheKey);
+        
+        if (cachedCategories != null && !cachedCategories.isEmpty()) {
+            log.info("从缓存获取商品分类列表");
+            return cachedCategories;
+        }
+        
+        // 如果缓存中没有，则从数据库获取
         List<ProductCategory> categories = categoryMapper.selectEnabledCategories();
-        return categories.stream()
+        List<CategoryDTO> result = categories.stream()
                 .map(category -> BeanCopyUtils.copyBean(category, CategoryDTO.class))
                 .collect(Collectors.toList());
+        
+        // 将结果存入缓存，设置过期时间为30分钟
+        redisTemplate.opsForValue().set(cacheKey, result, 30, TimeUnit.MINUTES);
+        log.debug("从数据库获取商品分类列表并存入缓存");
+        
+        return result;
     }
 
     @Override
@@ -190,7 +214,12 @@ public class ProductServiceImpl implements ProductService {
         category.setStatus(1); // 默认启用
 
         categoryMapper.insert(category);
-        return BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        CategoryDTO result = BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        
+        // 清除分类缓存
+        evictProductCategoryCache();
+        
+        return result;
     }
 
     @Override
@@ -206,7 +235,12 @@ public class ProductServiceImpl implements ProductService {
         category.setUpdatedAt(LocalDateTime.now());
 
         categoryMapper.updateById(category);
-        return BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        CategoryDTO result = BeanCopyUtils.copyBean(category, CategoryDTO.class);
+        
+        // 清除分类缓存
+        evictProductCategoryCache();
+        
+        return result;
     }
 
     @Override
@@ -224,6 +258,9 @@ public class ProductServiceImpl implements ProductService {
         }
 
         categoryMapper.deleteById(id);
+        
+        // 清除分类缓存
+        evictProductCategoryCache();
     }
 
     @Override
@@ -265,5 +302,16 @@ public class ProductServiceImpl implements ProductService {
 
         category.setStatus(status);
         categoryMapper.updateById(category);
+        
+        // 清除分类缓存
+        evictProductCategoryCache();
+    }
+    
+    /**
+     * 清除商品分类缓存
+     */
+    private void evictProductCategoryCache() {
+        redisTemplate.delete(PRODUCT_CATEGORIES_CACHE_KEY);
+        log.debug("清除商品分类缓存");
     }
 }

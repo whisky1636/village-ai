@@ -196,12 +196,38 @@
           />
         </el-form-item>
         <el-form-item label="内容" prop="content">
-          <el-input
-            v-model="form.content"
-            type="textarea"
-            :rows="10"
-            placeholder="请输入资讯内容（支持HTML）"
-          />
+          <div class="content-editor-wrapper">
+            <div class="toolbar">
+              <el-upload
+                class="media-uploader"
+                action="/api/file/upload"
+                :show-file-list="false"
+                :on-success="handleContentImageSuccess"
+                :before-upload="beforeImageUpload"
+                :headers="uploadHeaders"
+              >
+                <el-button size="small" :icon="Picture" type="primary" plain>插入图片</el-button>
+              </el-upload>
+              <el-upload
+                class="media-uploader"
+                action="/api/file/upload"
+                :show-file-list="false"
+                :on-success="handleContentVideoSuccess"
+                :before-upload="beforeVideoUpload"
+                :headers="uploadHeaders"
+              >
+                <el-button size="small" :icon="VideoPlay" type="success" plain style="margin-left: 10px;">插入视频</el-button>
+              </el-upload>
+              <span class="toolbar-tip">点击按钮上传媒体文件并将其插入到当前光标位置</span>
+            </div>
+            <el-input
+              ref="contentInputRef"
+              v-model="form.content"
+              type="textarea"
+              :rows="12"
+              placeholder="请输入资讯内容（支持HTML，点击上方按钮插入图片和视频到当前光标处）"
+            />
+          </div>
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="8">
@@ -243,9 +269,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Refresh } from '@element-plus/icons-vue'
+import { Plus, Search, Refresh, Picture, VideoPlay } from '@element-plus/icons-vue'
 import newsApi from '@/api/news'
 import Pagination from '@/components/Pagination.vue'
 
@@ -284,6 +310,7 @@ const form = reactive({
 
 // 表单引用
 const formRef = ref(null)
+const contentInputRef = ref(null)
 
 // 表单验证规则
 const rules = {
@@ -293,8 +320,71 @@ const rules = {
 }
 
 // 上传图片相关
-const uploadHeaders = {
-  Authorization: sessionStorage.getItem('token') || ''
+const uploadHeaders = computed(() => ({
+  Authorization: `Bearer ${sessionStorage.getItem('token') || ''}`
+}))
+
+// 在光标处插入内容
+const insertAtCursor = (text) => {
+  const textarea = contentInputRef.value?.ref
+  if (!textarea) {
+    form.content += text
+    return
+  }
+  
+  const startPos = textarea.selectionStart
+  const endPos = textarea.selectionEnd
+  const beforeText = form.content.substring(0, startPos)
+  const afterText = form.content.substring(endPos)
+  
+  form.content = beforeText + text + afterText
+  
+  // 插入后保持焦点并移动光标到插入内容之后
+  setTimeout(() => {
+    textarea.focus()
+    const newPos = startPos + text.length
+    textarea.setSelectionRange(newPos, newPos)
+  }, 0)
+}
+
+// 内容插入图片成功回调
+const handleContentImageSuccess = (response) => {
+  if (response.code === 200) {
+    const imgUrl = response.data
+    const imgTag = `<img src="${imgUrl}" style="max-width: 100%; display: block; margin: 10px 0;" />`
+    insertAtCursor(imgTag)
+    ElMessage.success('图片上传并插入成功')
+  } else {
+    ElMessage.error(response.message || '图片上传失败')
+  }
+}
+
+// 内容插入视频成功回调
+const handleContentVideoSuccess = (response) => {
+  if (response.code === 200) {
+    const videoUrl = response.data
+    const videoTag = `<video src="${videoUrl}" controls style="max-width: 100%; display: block; margin: 10px 0;"></video>`
+    insertAtCursor(videoTag)
+    ElMessage.success('视频上传并插入成功')
+  } else {
+    ElMessage.error(response.message || '视频上传失败')
+  }
+}
+
+// 视频上传前的校验
+const beforeVideoUpload = (file) => {
+  const isVideo = file.type.startsWith('video/')
+  const isLt50M = file.size / 1024 / 1024 < 50
+
+  if (!isVideo) {
+    ElMessage.error('只能上传视频格式的文件!')
+    return false
+  }
+  if (!isLt50M) {
+    ElMessage.error('视频大小不能超过 50MB!')
+    return false
+  }
+  return true
 }
 
 // 获取资讯列表
@@ -560,5 +650,35 @@ onMounted(() => {
   margin-top: 8px;
   color: #909399;
   font-size: 12px;
+}
+
+.content-editor-wrapper {
+  width: 100%;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+
+.content-editor-wrapper .toolbar {
+  padding: 8px 12px;
+  background-color: #f5f7fa;
+  border-bottom: 1px solid #dcdfe6;
+  display: flex;
+  align-items: center;
+}
+
+.toolbar-tip {
+  margin-left: 15px;
+  font-size: 12px;
+  color: #909399;
+}
+
+.media-uploader {
+  display: inline-block;
+}
+
+:deep(.content-editor-wrapper .el-textarea__inner) {
+  border: none;
+  border-radius: 0;
+  padding: 10px;
 }
 </style>

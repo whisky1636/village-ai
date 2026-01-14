@@ -402,6 +402,17 @@ const routes = [
           requiresAuth: true
         }
       },
+      // 资讯管理路由
+      {
+        path: 'news',
+        name: 'NewsManagement',
+        component: () => import('@/views/admin/news.vue'),
+        meta: {
+          title: '资讯管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
       // 活动管理路由
       {
         path: 'activities',

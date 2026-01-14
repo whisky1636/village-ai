@@ -1,23 +1,32 @@
-package com.village.revive.dto;
+package com.village.revive.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
- * 资讯DTO
+ * 资讯实体类
  */
 @Data
-public class NewsDTO {
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@TableName("news")
+public class News {
     
+    @TableId(type = IdType.AUTO)
     private Long id;
     
     /**
      * 标题
      */
-    @NotBlank(message = "标题不能为空")
     private String title;
     
     /**
@@ -33,12 +42,12 @@ public class NewsDTO {
     /**
      * 封面图片
      */
+    @TableField("cover_image")
     private String coverImage;
     
     /**
      * 分类：news-新闻，policy-政策，activity-活动
      */
-    @NotBlank(message = "分类不能为空")
     private String category;
     
     /**
@@ -54,22 +63,25 @@ public class NewsDTO {
     /**
      * 浏览次数
      */
+    @TableField("view_count")
     private Integer viewCount;
     
     /**
      * 是否置顶：0否，1是
      */
+    @TableField("is_top")
     private Boolean isTop;
     
     /**
      * 是否推荐：0否，1是
      */
+    @TableField("is_featured")
     private Boolean isFeatured;
     
     /**
      * 发布时间
      */
-    @NotNull(message = "发布时间不能为空")
+    @TableField("publish_time")
     private LocalDateTime publishTime;
     
     /**
@@ -80,25 +92,23 @@ public class NewsDTO {
     /**
      * 排序值
      */
+    @TableField("sort_order")
     private Integer sortOrder;
     
     /**
      * 创建时间
      */
+    @TableField("created_at")
     private LocalDateTime createdAt;
     
     /**
      * 更新时间
      */
+    @TableField("updated_at")
     private LocalDateTime updatedAt;
     
     /**
-     * 分类描述
+     * 逻辑删除
      */
-    private String categoryDesc;
-    
-    /**
-     * 状态描述
-     */
-    private String statusDesc;
+    private Boolean deleted;
 }

@@ -2,9 +2,7 @@ server:
   port: 7070
 
 # 通义千问配置
-qwen:
-  api-key: sk-
-  api-url: https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation
+
 
 spring:
   application:
@@ -31,21 +29,6 @@ spring:
       database: 0
       timeout: 10000ms
       password: 54088Wsj!
-  mail:
-    host: smtp.qq.com       # SMTP服务器地址
-    port: 465               # SMTP端口（QQ邮箱587/465）
-    username: whisky1636@qq.com # 发件人邮箱
-    password: estznqytnuozbfea # 邮箱授权码（不是登录密码，需在邮箱设置中开启POP3/SMTP并生成）
-    default-encoding: UTF-8
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          auth: true
-          socketFactory:
-            class: javax.net.ssl.SSLSocketFactory
-          starttls:
-            enable: true
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: GMT+8
@@ -99,10 +82,5 @@ verify-code:
     send-interval-seconds: 60 # 防刷：同一邮箱60秒内只能发一次
     prefix: "email:code:"   # Redis缓存Key前缀（如：email:code:xxx@qq.com）
     template: "乡村振兴-你的注册验证码是：%s，有效期5分钟,请妥善保管，切勿泄露给他人。"
-village:
-  alioss:
-    endpoint: oss-cn-beijing.aliyuncs.com
-    access-key-id:
-    access-key-secret:
-    bucket-name: sky-order1636888
+
 

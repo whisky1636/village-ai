@@ -151,6 +151,36 @@ const routes = [
       }
     ]
   },
+   // 论坛相关路由
+  {
+    path: '/forum',
+    name: 'UserForum',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '建言献策',
+      requiresAuth: false
+    },
+    children: [
+      {
+        path: '',
+        name: 'ForumPage',
+        component: () => import('@/views/user/forum.vue'),
+        meta: {
+          title: '建言献策',
+          requiresAuth: false
+        }
+      },
+      {
+        path: 'detail/:id',
+        name: 'ForumDetail',
+        component: () => import('@/views/user/forum-detail.vue'),
+        meta: {
+          title: '建议详情',
+          requiresAuth: false
+        }
+      }
+    ]
+  },
     // 用户个人中心路由
   {
     path: '/user',

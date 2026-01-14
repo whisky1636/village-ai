@@ -138,10 +138,11 @@ public class ForumPostController {
     @Operation(summary = "点赞/取消点赞帖子")
     @PostMapping("/{id}/like")
     @SystemOperation(module = "论坛管理", operation = "点赞帖子", description = "用户点赞论坛帖子")
-    public Result<Boolean> togglePostLike(@Parameter(description = "帖子ID") @PathVariable Long id) {
+    public Result<Boolean> likePost(@Parameter(description = "帖子ID") @PathVariable Long id) {
         boolean isLiked = forumPostService.togglePostLike(id);
         return Result.success(isLiked);
     }
+
     
     /**
      * 获取当前用户的帖子列表

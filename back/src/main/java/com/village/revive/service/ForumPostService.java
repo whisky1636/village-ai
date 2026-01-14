@@ -69,4 +69,6 @@ public interface ForumPostService {
      * 获取论坛统计数据
      */
     ForumStatisticsDTO getForumStatistics();
+
+    boolean unlikePost(Long id);
 }

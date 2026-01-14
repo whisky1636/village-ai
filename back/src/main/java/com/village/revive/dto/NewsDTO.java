@@ -34,6 +34,10 @@ public class NewsDTO {
      * 封面图片
      */
     private String coverImage;
+    /*
+    * 附件
+    * */
+    private String attachment;
     
     /**
      * 分类：news-新闻，policy-政策，activity-活动

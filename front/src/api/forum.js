@@ -118,7 +118,7 @@ export const forumPostAPI = {
    */
   unlikePost(id) {
     return request({
-      url: `/forum/posts/${id}/unlike`,
+      url: `/forum/posts/${id}/like`,
       method: 'post'
     })
   },

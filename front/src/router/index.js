@@ -121,6 +121,36 @@ const routes = [
       }
     ]
   },
+   // 资讯相关路由
+  {
+    path: '/news',
+    name: 'UserNews',
+    component: () => import('@/views/user/layout.vue'),
+    meta: {
+      title: '动态资讯',
+      requiresAuth: false
+    },
+    children: [
+      {
+        path: '',
+        name: 'NewsPage',
+        component: () => import('@/views/user/news.vue'),
+        meta: {
+          title: '动态资讯',
+          requiresAuth: false
+        }
+      },
+      {
+        path: ':id',
+        name: 'NewsDetail',
+        component: () => import('@/views/user/news-detail.vue'),
+        meta: {
+          title: '资讯详情',
+          requiresAuth: false
+        }
+      }
+    ]
+  },
     // 用户个人中心路由
   {
     path: '/user',

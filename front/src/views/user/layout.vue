@@ -193,7 +193,7 @@ const handleUserCommand = async (command) => {
         })
         await userStore.logoutAction()
         ElMessage.success('已退出登录')
-        router.push('/home')
+        router.push('/login')
       } catch (error) {
         // 用户取消操作
       }

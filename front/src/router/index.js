@@ -443,6 +443,37 @@ const routes = [
           requiresAuth: true
         }
       },
+       // 论坛管理路由
+      {
+        path: 'forum-posts',
+        name: 'ForumPostManagement',
+        component: () => import('@/views/admin/forum-posts.vue'),
+        meta: {
+          title: '帖子管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'forum-comments',
+        name: 'ForumCommentManagement',
+        component: () => import('@/views/admin/forum-comments.vue'),
+        meta: {
+          title: '评论管理',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'forum-statistics',
+        name: 'ForumStatistics',
+        component: () => import('@/views/admin/forum-statistics.vue'),
+        meta: {
+          title: '论坛统计',
+          roles: ['ADMIN'],
+          requiresAuth: true
+        }
+      },
       // 活动管理路由
       {
         path: 'activities',

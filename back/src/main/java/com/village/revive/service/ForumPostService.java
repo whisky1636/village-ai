@@ -70,5 +70,5 @@ public interface ForumPostService {
      */
     ForumStatisticsDTO getForumStatistics();
 
-    boolean unlikePost(Long id);
+
 }

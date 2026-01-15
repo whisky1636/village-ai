@@ -4,9 +4,9 @@ import { useUserStore } from '@/stores/user'
 const routes = [
   {
     path: '/',
-    redirect: '/login'
+    redirect: '/home'
   },
-  //首页路由
+  // 前台用户端路由
   {
     path: '/home',
     name: 'UserHome',
@@ -25,12 +25,11 @@ const routes = [
           title: '首页',
           requiresAuth: false
         }
-      },
+      }
     ]
   },
-
-
-    // 景点相关路由
+  
+  // 景点相关路由
   {
     path: '/attractions',
     name: 'UserAttractions',
@@ -61,7 +60,7 @@ const routes = [
     ]
   },
 
-// 活动相关路由
+  // 活动相关路由
   {
     path: '/activities',
     name: 'UserActivities',
@@ -91,7 +90,8 @@ const routes = [
       }
     ]
   },
-   // 商品相关路由
+  
+  // 商品相关路由
   {
     path: '/products',
     name: 'UserProducts',
@@ -121,7 +121,8 @@ const routes = [
       }
     ]
   },
-   // 资讯相关路由
+  
+  // 资讯相关路由
   {
     path: '/news',
     name: 'UserNews',
@@ -151,7 +152,8 @@ const routes = [
       }
     ]
   },
-   // 论坛相关路由
+  
+  // 论坛相关路由
   {
     path: '/forum',
     name: 'UserForum',
@@ -181,7 +183,8 @@ const routes = [
       }
     ]
   },
-    // 用户个人中心路由
+  
+  // 用户个人中心路由
   {
     path: '/user',
     name: 'UserCenter',
@@ -227,10 +230,28 @@ const routes = [
           requiresAuth: true
         }
       },
-
+      {
+        path: 'suggestions',
+        name: 'UserSuggestions',
+        component: () => import('@/views/user/suggestions.vue'),
+        meta: {
+          title: '我的建议',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'activities',
+        name: 'UserMyActivities',
+        component: () => import('@/views/user/my-activities.vue'),
+        meta: {
+          title: '我的活动',
+          requiresAuth: true
+        }
+      }
     ]
   },
-   // 购物车路由
+  
+  // 购物车路由
   {
     path: '/cart',
     name: 'ShoppingCart',
@@ -322,7 +343,18 @@ const routes = [
       roles: ['ADMIN']
     },
     children: [
-         // 个人中心路由
+      {
+        path: '',
+        name: 'dashboard',
+        component: () => import('@/views/admin/dashboard.vue'),
+        meta: {
+          title: '',
+          requiresAuth: true,
+          roles: ['ADMIN']
+        }
+      },
+      
+      // 个人中心路由
       {
         path: 'profile',
         name: 'adminProfile',
@@ -357,7 +389,8 @@ const routes = [
           roles: ['ADMIN']
         }
       },
-            // 系统日志路由
+      
+      // 系统日志路由
       {
         path: 'system-logs',
         name: 'SystemLogs',
@@ -391,7 +424,7 @@ const routes = [
           roles: ['ADMIN'],
           requiresAuth: true
         }
-      }, 
+      },
       {
         path: 'products',
         name: 'ProductManagement',
@@ -422,7 +455,7 @@ const routes = [
           requiresAuth: true
         }
       },
-    {
+      {
         path: 'product-reviews',
         name: 'ProductReviewManagement',
         component: () => import('@/views/admin/product-reviews.vue'),
@@ -432,7 +465,6 @@ const routes = [
           requiresAuth: true
         }
       },
-      // 资讯管理路由
       {
         path: 'news',
         name: 'NewsManagement',
@@ -443,7 +475,8 @@ const routes = [
           requiresAuth: true
         }
       },
-       // 论坛管理路由
+      
+      // 论坛管理路由
       {
         path: 'forum-posts',
         name: 'ForumPostManagement',
@@ -474,6 +507,7 @@ const routes = [
           requiresAuth: true
         }
       },
+      
       // 活动管理路由
       {
         path: 'activities',

@@ -34,7 +34,8 @@ public class FileController {
 
         String originalFilename = file.getOriginalFilename();
         String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
-        String newFileName = UUID.randomUUID() + ext;
+        String namrPart = originalFilename.substring(0, originalFilename.lastIndexOf("."));
+        String newFileName = namrPart+"-"+UUID.randomUUID() + ext;
 
         // OSS 对象名（保持你原来的目录结构）
         String objectName = "uploads/" + newFileName;

@@ -45,7 +45,11 @@ public class News {
     @TableField("cover_image")
     private String coverImage;
 
-    private String attatchment;
+    /**
+     * 附件
+     */
+    @TableField("attachment")
+    private String attachment;
     
     /**
      * 分类：news-新闻，policy-政策，activity-活动

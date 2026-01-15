@@ -338,6 +338,35 @@
               </el-button-group>
 
               <el-button-group style="margin-left: 10px;">
+                <el-tooltip content="代码块" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('codeBlock') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleCodeBlock().run()"
+                  >
+                    Code
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="引用" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('blockquote') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleBlockquote().run()"
+                  >
+                    Quote
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="分隔线" placement="top">
+                  <el-button 
+                    size="small" 
+                    @click="editor.chain().focus().setHorizontalRule().run()"
+                  >
+                    <el-icon><Minus /></el-icon>
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
+
+              <el-button-group style="margin-left: 10px;">
                 <el-tooltip content="撤销" placement="top">
                   <el-button size="small" @click="editor.chain().focus().undo().run()">
                     <el-icon><RefreshLeft /></el-icon>
@@ -418,7 +447,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   Plus, Search, Refresh, Picture, VideoPlay,
   RefreshLeft, RefreshRight, ChatLineRound, Link as LinkIcon,
-  Close
+  Close, Minus
 } from '@element-plus/icons-vue'
 import newsApi from '@/api/news'
 import Pagination from '@/components/Pagination.vue'
@@ -426,6 +455,9 @@ import { Editor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import Link from '@tiptap/extension-link'
+import Code from '@tiptap/extension-code'
+import CodeBlock from '@tiptap/extension-code-block'
+import HorizontalRule from '@tiptap/extension-horizontal-rule'
 
 // 数据定义
 const loading = ref(false)
@@ -478,6 +510,17 @@ const initEditor = () => {
       Link.configure({
         openOnClick: false,
       }),
+      Code.configure({
+        HTMLAttributes: {
+          class: 'inline-code',
+        },
+      }),
+      CodeBlock.configure({
+        HTMLAttributes: {
+          class: 'code-block',
+        },
+      }),
+      HorizontalRule,
     ],
     content: form.content,
     onUpdate: ({ editor: e }) => {
@@ -589,6 +632,67 @@ const insertAtCursor = (content) => {
     form.content += content
   }
 }
+
+// 处理剪贴板粘贴图片
+const handlePasteImage = async (event) => {
+  const items = event.clipboardData?.items
+  if (!items) return
+
+  for (let item of items) {
+    if (item.type.indexOf('image') !== -1) {
+      const file = item.getAsFile()
+      
+      // 验证图片
+      if (!beforeImageUpload(file)) {
+        return
+      }
+
+      // 上传文件
+      const formData = new FormData()
+      formData.append('file', file)
+
+      try {
+        loading.value = true
+        const res = await fetch('/api/file/upload', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${sessionStorage.getItem('token') || ''}`
+          },
+          body: formData
+        })
+        
+        const response = await res.json()
+        if (response.code === 200) {
+          const imgUrl = response.data
+          if (editor.value) {
+            editor.value.chain().focus().setImage({ src: imgUrl }).run()
+          }
+          ElMessage.success('剪贴板图片上传成功')
+        } else {
+          ElMessage.error(response.message || '图片上传失败')
+        }
+      } catch (error) {
+        console.error('剪贴板上传失败:', error)
+        ElMessage.error('图片上传失败')
+      } finally {
+        loading.value = false
+      }
+    }
+  }
+}
+
+// 监听编辑器的粘贴事件
+watch(dialogVisible, (val) => {
+  if (val && editor.value) {
+    // 对话框打开时，为编辑器内容区域添加粘贴监听
+    setTimeout(() => {
+      const editorElement = document.querySelector('.ProseMirror')
+      if (editorElement) {
+        editorElement.addEventListener('paste', handlePasteImage)
+      }
+    }, 100)
+  }
+})
 
 // 内容插入图片成功回调
 const handleContentImageSuccess = (response) => {
@@ -1028,6 +1132,29 @@ onMounted(() => {
 
 :deep(.ProseMirror ul), :deep(.ProseMirror ol) {
   padding: 0 1rem;
+}
+
+:deep(.ProseMirror pre) {
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+:deep(.ProseMirror code) {
+  background: #f5f5f5;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9em;
+}
+
+:deep(.ProseMirror hr) {
+  border: none;
+  border-top: 2px solid #ddd;
+  margin: 20px 0;
 }
 
 .media-uploader {

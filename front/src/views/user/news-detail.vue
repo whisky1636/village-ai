@@ -57,6 +57,25 @@
                 
                 <!-- 正文内容 -->
                 <div class="content-text" v-html="news.content"></div>
+
+                <!-- 附件展示 -->
+                <div class="attachment-section" v-if="attachments && attachments.length > 0">
+                  <div class="attachment-title">
+                    <el-icon><Document /></el-icon>
+                    <span>相关附件 ({{ attachments.length }})</span>
+                  </div>
+                  <div class="attachment-list">
+                    <div v-for="(file, index) in attachments" :key="index" class="attachment-item">
+                      <div class="file-info">
+                        <el-icon><Paperclip /></el-icon>
+                        <span class="file-name">{{ getFileName(file) }}</span>
+                      </div>
+                      <el-button type="primary" link @click="downloadFile(file)">
+                        下载
+                      </el-button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- 文章操作 -->
@@ -147,10 +166,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Calendar, View, User, Share, Star } from '@element-plus/icons-vue'
+import { 
+  Calendar, View, User, Share, Star,
+  Document, Paperclip
+} from '@element-plus/icons-vue'
 import newsApi from '@/api/news'
 
 const route = useRoute()
@@ -161,6 +183,46 @@ const news = ref(null)
 const relatedNews = ref([])
 const latestNews = ref([])
 const isLiked = ref(false)
+
+// 附件列表解析
+const attachments = computed(() => {
+  if (!news.value?.attachment) return []
+  if (Array.isArray(news.value.attachment)) return news.value.attachment
+  try {
+    const arr = JSON.parse(news.value.attachment)
+    return Array.isArray(arr) ? arr : []
+  } catch (e) {
+    return []
+  }
+})
+
+// 从 URL 获取文件名并清理 UUID
+const getFileName = (url) => {
+  if (!url) return ''
+  const fullFileName = url.substring(url.lastIndexOf('/') + 1)
+  const lastDotIndex = fullFileName.lastIndexOf('.')
+  
+  let namePart = lastDotIndex !== -1 ? fullFileName.substring(0, lastDotIndex) : fullFileName
+  const extension = lastDotIndex !== -1 ? fullFileName.substring(lastDotIndex) : ''
+  console.log('extension:', extension)
+  const lastHyphenIndex = namePart.indexOf('-')
+  if (lastHyphenIndex !== -1) {
+    // 后端格式为 originalFilename + "-" + UUID + ext，因此截取最后一个 "-" 之前的部分
+    return namePart.substring(0, lastHyphenIndex) + extension
+  }
+  return fullFileName
+}
+
+// 下载文件
+const downloadFile = (url) => {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = getFileName(url)
+  link.target = '_blank'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
 
 // 热门标签
 const hotTags = ref(['乡村振兴', '政策解读', '产业发展', '美丽乡村', '科技兴农', '文化传承'])
@@ -498,6 +560,61 @@ onMounted(() => {
   margin: 15px 0;
   border-radius: 4px;
   border: 1px solid #e5e5e5;
+}
+
+.attachment-section {
+  margin-top: 32px;
+  padding: 24px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.attachment-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.attachment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: #fff;
+  border-radius: 8px;
+  border: 1px solid #edf2f7;
+  transition: all 0.2s;
+}
+
+.attachment-item:hover {
+  border-color: #409eff;
+  background-color: #f0f7ff;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #475569;
+}
+
+.file-name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* 文章操作 */

@@ -65,6 +65,12 @@
       </el-table-column>
       <el-table-column prop="author" label="作者" width="120" />
       <el-table-column prop="source" label="来源" width="120" />
+      <el-table-column prop="attachment" label="附件" width="80">
+        <template #default="scope">
+          <el-tag v-if="hasAttachment(scope.row)" type="success">有</el-tag>
+          <el-tag v-else type="info">无</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column prop="viewCount" label="浏览量" width="100" />
       <el-table-column prop="isTop" label="置顶" width="80">
         <template #default="scope">
@@ -197,37 +203,175 @@
         </el-form-item>
         <el-form-item label="内容" prop="content">
           <div class="content-editor-wrapper">
-            <div class="toolbar">
-              <el-upload
-                class="media-uploader"
-                action="/api/file/upload"
-                :show-file-list="false"
-                :on-success="handleContentImageSuccess"
-                :before-upload="beforeImageUpload"
-                :headers="uploadHeaders"
-              >
-                <el-button size="small" :icon="Picture" type="primary" plain>插入图片</el-button>
-              </el-upload>
-              <el-upload
-                class="media-uploader"
-                action="/api/file/upload"
-                :show-file-list="false"
-                :on-success="handleContentVideoSuccess"
-                :before-upload="beforeVideoUpload"
-                :headers="uploadHeaders"
-              >
-                <el-button size="small" :icon="VideoPlay" type="success" plain style="margin-left: 10px;">插入视频</el-button>
-              </el-upload>
-              <span class="toolbar-tip">点击按钮上传媒体文件并将其插入到当前光标位置</span>
+            <div class="tiptap-toolbar">
+              <el-button-group>
+                <el-tooltip content="加粗" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('bold') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleBold().run()"
+                  >
+                    <b>B</b>
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="斜体" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('italic') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleItalic().run()"
+                  >
+                    <i>I</i>
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="删除线" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('strike') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleStrike().run()"
+                  >
+                    <s>S</s>
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
+
+              <el-button-group style="margin-left: 10px;">
+                <el-tooltip content="标题1" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('heading', { level: 1 }) ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleHeading({ level: 1 }).run()"
+                  >
+                    H1
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="标题2" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('heading', { level: 2 }) ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleHeading({ level: 2 }).run()"
+                  >
+                    H2
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="标题3" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('heading', { level: 3 }) ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleHeading({ level: 3 }).run()"
+                  >
+                    H3
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
+
+              <el-button-group style="margin-left: 10px;">
+                <el-tooltip content="无序列表" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('bulletList') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleBulletList().run()"
+                  >
+                    UL
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="有序列表" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('orderedList') ? 'primary' : ''" 
+                    @click="editor.chain().focus().toggleOrderedList().run()"
+                  >
+                    OL
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
+
+              <el-button-group style="margin-left: 10px;">
+                <el-tooltip content="链接" placement="top">
+                  <el-button 
+                    size="small" 
+                    :type="editor?.isActive('link') ? 'primary' : ''" 
+                    @click="setLink"
+                  >
+                    <el-icon><LinkIcon /></el-icon>
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="取消链接" placement="top">
+                  <el-button 
+                    size="small" 
+                    :disabled="!editor?.isActive('link')" 
+                    @click="editor.chain().focus().unsetLink().run()"
+                  >
+                    <el-icon><Close /></el-icon>
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
+
+              <el-button-group style="margin-left: 10px;">
+                <el-upload
+                  class="media-uploader"
+                  action="/api/file/upload"
+                  :show-file-list="false"
+                  :on-success="handleContentImageSuccess"
+                  :before-upload="beforeImageUpload"
+                  :headers="uploadHeaders"
+                >
+                  <el-tooltip content="插入图片" placement="top">
+                    <el-button size="small">
+                      <el-icon><Picture /></el-icon>
+                    </el-button>
+                  </el-tooltip>
+                </el-upload>
+                <el-upload
+                  class="media-uploader"
+                  action="/api/file/upload"
+                  :show-file-list="false"
+                  :on-success="handleContentVideoSuccess"
+                  :before-upload="beforeVideoUpload"
+                  :headers="uploadHeaders"
+                >
+                  <el-tooltip content="插入视频" placement="top">
+                    <el-button size="small">
+                      <el-icon><VideoPlay /></el-icon>
+                    </el-button>
+                  </el-tooltip>
+                </el-upload>
+              </el-button-group>
+
+              <el-button-group style="margin-left: 10px;">
+                <el-tooltip content="撤销" placement="top">
+                  <el-button size="small" @click="editor.chain().focus().undo().run()">
+                    <el-icon><RefreshLeft /></el-icon>
+                  </el-button>
+                </el-tooltip>
+                <el-tooltip content="重做" placement="top">
+                  <el-button size="small" @click="editor.chain().focus().redo().run()">
+                    <el-icon><RefreshRight /></el-icon>
+                  </el-button>
+                </el-tooltip>
+              </el-button-group>
             </div>
-            <el-input
-              ref="contentInputRef"
-              v-model="form.content"
-              type="textarea"
-              :rows="12"
-              placeholder="请输入资讯内容（支持HTML，点击上方按钮插入图片和视频到当前光标处）"
-            />
+            <div class="editor-content">
+              <editor-content :editor="editor" />
+            </div>
           </div>
+        </el-form-item>
+        <el-form-item label="附件" prop="attachment">
+          <el-upload
+            class="attachment-uploader"
+            action="/api/file/upload"
+            multiple
+            :on-success="handleAttachmentSuccess"
+            :on-remove="handleAttachmentRemove"
+            :file-list="attachmentFileList"
+            :headers="uploadHeaders"
+          >
+            <el-button type="primary">点击上传附件</el-button>
+            <template #tip>
+              <div class="el-upload__tip">
+                支持上传任意格式文件，附件将单独保存并在详情页展示
+              </div>
+            </template>
+          </el-upload>
         </el-form-item>
         <el-row :gutter="20">
           <el-col :span="8">
@@ -269,11 +413,19 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Search, Refresh, Picture, VideoPlay } from '@element-plus/icons-vue'
+import { 
+  Plus, Search, Refresh, Picture, VideoPlay,
+  RefreshLeft, RefreshRight, ChatLineRound, Link as LinkIcon,
+  Close
+} from '@element-plus/icons-vue'
 import newsApi from '@/api/news'
 import Pagination from '@/components/Pagination.vue'
+import { Editor, EditorContent } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+import Image from '@tiptap/extension-image'
+import Link from '@tiptap/extension-link'
 
 // 数据定义
 const loading = ref(false)
@@ -305,12 +457,60 @@ const form = reactive({
   isTop: false,
   isFeatured: false,
   publishTime: new Date(),
-  status: 0
+  status: 0,
+  attachment: []
 })
 
 // 表单引用
 const formRef = ref(null)
-const contentInputRef = ref(null)
+
+// Tiptap 编辑器实例
+const editor = ref(null)
+
+// 初始化编辑器
+const initEditor = () => {
+  editor.value = new Editor({
+    extensions: [
+      StarterKit,
+      Image.configure({
+        allowBase64: true,
+      }),
+      Link.configure({
+        openOnClick: false,
+      }),
+    ],
+    content: form.content,
+    onUpdate: ({ editor: e }) => {
+      form.content = e.getHTML()
+    },
+  })
+}
+
+// 销毁编辑器
+onBeforeUnmount(() => {
+  editor.value?.destroy()
+})
+
+// 监听内容变化同步给编辑器 (主要用于编辑时初始化)
+watch(() => form.id, (newVal) => {
+  if (editor.value) {
+    editor.value.commands.setContent(form.content || '')
+  }
+})
+
+// 监听对话框关闭同步清理
+watch(dialogVisible, (val) => {
+  if (!val) {
+    // 对话框关闭时，如果之后要重新创建可以 destroy
+  } else {
+    // 对话框打开时，如果编辑器未初始化则初始化
+    if (!editor.value) {
+      initEditor()
+    } else {
+      editor.value.commands.setContent(form.content || '')
+    }
+  }
+})
 
 // 表单验证规则
 const rules = {
@@ -324,35 +524,82 @@ const uploadHeaders = computed(() => ({
   Authorization: `Bearer ${sessionStorage.getItem('token') || ''}`
 }))
 
-// 在光标处插入内容
-const insertAtCursor = (text) => {
-  const textarea = contentInputRef.value?.ref
-  if (!textarea) {
-    form.content += text
+// 从 URL 获取经过清理（移除 UUID）的文件名
+const getCleanFileName = (url) => {
+  if (!url) return ''
+  const fullFileName = url.substring(url.lastIndexOf('/') + 1)
+  const lastDotIndex = fullFileName.lastIndexOf('.')
+  
+  let namePart = lastDotIndex !== -1 ? fullFileName.substring(0, lastDotIndex) : fullFileName
+  const extension = lastDotIndex !== -1 ? fullFileName.substring(lastDotIndex) : ''
+  
+  const lastHyphenIndex = namePart.lastIndexOf('-')
+  if (lastHyphenIndex !== -1) {
+    // 截取最后一个连字符之前的内容作为原始文件名
+    return namePart.substring(0, lastHyphenIndex) + extension
+  }
+  return fullFileName
+}
+
+// 附件文件列表转换（用于 el-upload 展示）
+const attachmentFileList = computed({
+  get: () => {
+    try {
+      const list = typeof form.attachment === 'string' 
+        ? JSON.parse(form.attachment) 
+        : (form.attachment || [])
+      return list.map(url => ({
+        name: getCleanFileName(url),
+        url: url
+      }))
+    } catch (e) {
+      return []
+    }
+  },
+  set: (val) => {
+    form.attachment = val.map(file => file.url)
+  }
+})
+
+// 设置链接
+const setLink = () => {
+  const previousUrl = editor.value.getAttributes('link').href
+  const url = window.prompt('URL', previousUrl)
+
+  // 取消
+  if (url === null) {
     return
   }
-  
-  const startPos = textarea.selectionStart
-  const endPos = textarea.selectionEnd
-  const beforeText = form.content.substring(0, startPos)
-  const afterText = form.content.substring(endPos)
-  
-  form.content = beforeText + text + afterText
-  
-  // 插入后保持焦点并移动光标到插入内容之后
-  setTimeout(() => {
-    textarea.focus()
-    const newPos = startPos + text.length
-    textarea.setSelectionRange(newPos, newPos)
-  }, 0)
+
+  // 为空
+  if (url === '') {
+    editor.value.chain().focus().extendMarkRange('link').unsetLink().run()
+    return
+  }
+
+  // 设置
+  editor.value.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
+}
+
+// 在编辑器光标处插入内容
+const insertAtCursor = (content) => {
+  if (editor.value) {
+    editor.value.commands.insertContent(content)
+  } else {
+    form.content += content
+  }
 }
 
 // 内容插入图片成功回调
 const handleContentImageSuccess = (response) => {
   if (response.code === 200) {
     const imgUrl = response.data
-    const imgTag = `<img src="${imgUrl}" style="max-width: 100%; display: block; margin: 10px 0;" />`
-    insertAtCursor(imgTag)
+    if (editor.value) {
+      editor.value.chain().focus().setImage({ src: imgUrl }).run()
+    } else {
+      const imgTag = `<img src="${imgUrl}" style="max-width: 100%; display: block; margin: 10px 0;" />`
+      insertAtCursor(imgTag)
+    }
     ElMessage.success('图片上传并插入成功')
   } else {
     ElMessage.error(response.message || '图片上传失败')
@@ -363,6 +610,8 @@ const handleContentImageSuccess = (response) => {
 const handleContentVideoSuccess = (response) => {
   if (response.code === 200) {
     const videoUrl = response.data
+    // Tiptap 默认不支持 video 标签，这里直接插入 HTML 字符串
+    // 如果需要更好的展示，建议引入专用的 Video 扩展
     const videoTag = `<video src="${videoUrl}" controls style="max-width: 100%; display: block; margin: 10px 0;"></video>`
     insertAtCursor(videoTag)
     ElMessage.success('视频上传并插入成功')
@@ -437,6 +686,19 @@ const handleAdd = () => {
 const handleEdit = (row) => {
   resetForm()
   Object.assign(form, row)
+  
+  // 处理附件数据：如果是字符串则解析为数组
+  if (form.attachment && typeof form.attachment === 'string') {
+    try {
+      form.attachment = JSON.parse(form.attachment)
+    } catch (e) {
+      console.error('附件解析失败:', e)
+      form.attachment = []
+    }
+  } else if (!form.attachment) {
+    form.attachment = []
+  }
+
   // 转换发布时间格式
   if (form.publishTime) {
     form.publishTime = new Date(form.publishTime)
@@ -501,11 +763,18 @@ const submitForm = async () => {
   try {
     await formRef.value.validate()
     
+    // 复制表单数据进行处理
+    const submitData = { ...form }
+    // 如果附件是数组，且后端要求存储为JSON字符串
+    if (Array.isArray(submitData.attachment)) {
+      submitData.attachment = JSON.stringify(submitData.attachment)
+    }
+    
     if (form.id) {
-      await newsApi.updateNews(form.id, form)
+      await newsApi.updateNews(form.id, submitData)
       ElMessage.success('更新成功')
     } else {
-      await newsApi.createNews(form)
+      await newsApi.createNews(submitData)
       ElMessage.success('新增成功')
     }
     
@@ -536,7 +805,8 @@ const resetForm = () => {
     isTop: false,
     isFeatured: false,
     publishTime: new Date(),
-    status: 0
+    status: 0,
+    attachment: []
   })
   formRef.value?.clearValidate()
 }
@@ -559,6 +829,38 @@ const handleCoverImageSuccess = (response, uploadFile) => {
   } else {
     ElMessage.error(response.message || '封面图片上传失败')
   }
+}
+
+// 附件上传成功回调
+const handleAttachmentSuccess = (response) => {
+  if (response.code === 200) {
+    let currentAttachments = []
+    try {
+      currentAttachments = typeof form.attachment === 'string' 
+        ? JSON.parse(form.attachment) 
+        : (form.attachment || [])
+    } catch (e) {
+      currentAttachments = []
+    }
+    currentAttachments.push(response.data)
+    form.attachment = currentAttachments
+    ElMessage.success('附件上传成功')
+  } else {
+    ElMessage.error(response.message || '附件上传失败')
+  }
+}
+
+// 附件移除回调
+const handleAttachmentRemove = (file) => {
+  let currentAttachments = []
+  try {
+    currentAttachments = typeof form.attachment === 'string' 
+      ? JSON.parse(form.attachment) 
+      : (form.attachment || [])
+  } catch (e) {
+    currentAttachments = []
+  }
+  form.attachment = currentAttachments.filter(url => url !== file.url)
 }
 
 // 图片上传前的校验
@@ -587,6 +889,21 @@ const categoryNames = {
 // 获取分类名称
 const getCategoryName = (category) => {
   return categoryNames[category] || category
+}
+
+// 检查是否有附件
+const hasAttachment = (row) => {
+  if (!row.attachment) return false
+  if (Array.isArray(row.attachment)) return row.attachment.length > 0
+  if (typeof row.attachment === 'string') {
+    try {
+      const arr = JSON.parse(row.attachment)
+      return Array.isArray(arr) && arr.length > 0
+    } catch (e) {
+      return false
+    }
+  }
+  return false
 }
 
 // 格式化日期
@@ -656,29 +973,64 @@ onMounted(() => {
   width: 100%;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
 }
 
-.content-editor-wrapper .toolbar {
+.tiptap-toolbar {
   padding: 8px 12px;
   background-color: #f5f7fa;
   border-bottom: 1px solid #dcdfe6;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
 }
 
-.toolbar-tip {
-  margin-left: 15px;
-  font-size: 12px;
-  color: #909399;
+.editor-content {
+  padding: 10px;
+  min-height: 300px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+:deep(.ProseMirror) {
+  min-height: 280px;
+  outline: none;
+}
+
+:deep(.ProseMirror p.is-editor-empty:first-child::before) {
+  content: "请输入内容...";
+  float: left;
+  color: #adb5bd;
+  pointer-events: none;
+  height: 0;
+}
+
+:deep(.ProseMirror img) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+}
+
+:deep(.ProseMirror video) {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px 0;
+}
+
+:deep(.ProseMirror blockquote) {
+  padding-left: 1rem;
+  border-left: 3px solid #eee;
+  color: #666;
+}
+
+:deep(.ProseMirror ul), :deep(.ProseMirror ol) {
+  padding: 0 1rem;
 }
 
 .media-uploader {
   display: inline-block;
-}
-
-:deep(.content-editor-wrapper .el-textarea__inner) {
-  border: none;
-  border-radius: 0;
-  padding: 10px;
 }
 </style>

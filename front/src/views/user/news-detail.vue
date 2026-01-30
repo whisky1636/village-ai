@@ -207,6 +207,9 @@ const getFileName = (url) => {
   console.log('extension:', extension)
   const lastHyphenIndex = namePart.indexOf('-')
   if (lastHyphenIndex !== -1) {
+  console.log('namePart before:', namePart)
+  console.log('lastHyphenIndex:', lastHyphenIndex)  
+  console.log('namePart after:', namePart.substring(0, lastHyphenIndex))
     // 后端格式为 originalFilename + "-" + UUID + ext，因此截取最后一个 "-" 之前的部分
     return namePart.substring(0, lastHyphenIndex) + extension
   }

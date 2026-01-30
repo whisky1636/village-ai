@@ -7,14 +7,14 @@ export const useCartStore = defineStore('cart', () => {
   
   // // 获取购物车数量TODO
   const getCartCount = async () => {
-    // try {
-    //   const res = await cartApi.getCartCount()
-    //   if (res.code === 200) {
-    //     cartCount.value = res.data
-    //   }
-    // } catch (error) {
-    //   console.error('获取购物车数量失败:', error)
-    // }
+    try {
+      const res = await cartApi.getCartCount()
+      if (res.code === 200) {
+        cartCount.value = res.data
+      }
+    } catch (error) {
+      console.error('获取购物车数量失败:', error)
+    }
   }
   
   // 更新购物车数量（添加商品后增加）

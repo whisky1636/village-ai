@@ -36,7 +36,7 @@ public class FileController {
         String ext = originalFilename.substring(originalFilename.lastIndexOf("."));
         String namrPart = originalFilename.substring(0, originalFilename.lastIndexOf("."));
         String newFileName = namrPart+"-"+UUID.randomUUID() + ext;
-
+        log.info("上传文件: " + newFileName);
         // OSS 对象名（保持你原来的目录结构）
         String objectName = "uploads/" + newFileName;
 
@@ -119,6 +119,7 @@ public class FileController {
         if (fileName.endsWith(".bmp")) return "image/bmp";
         if (fileName.endsWith(".webp")) return "image/webp";
         if (fileName.endsWith(".pdf")) return "application/pdf";
+        if (fileName.endsWith(".xlsx")) return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
         return "application/octet-stream";
     }
 }
